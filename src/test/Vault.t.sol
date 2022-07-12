@@ -18,25 +18,16 @@ import "forge-std/console.sol";
 
 contract VaultsTest is DSTestPlus {
     Vault vault;
-    MockERC20 underlying;
-
-    MockERC20Strategy strategy1;
-    MockERC20Strategy strategy2;
+    MockERC20 asset;
 
     function setUp() public {
-        underlying = new MockERC20("Mock Token", "TKN", 18);
+        asset = new MockERC20("Mock Token", "TKN", 18);
 
-        vault = new VaultFactory(address(this), Authority(address(0))).deployVault(underlying, 'test_strat', 'TST');
+        vault = new VaultFactory(address(this), Authority(address(0))).deployVault(asset, "test_strat", "TST");
 
-        vault.setFeePercent(0.1e18);
-        vault.setHarvestDelay(6 hours);
-        vault.setHarvestWindow(5 minutes);
-        vault.setTargetFloatPercent(0.01e18);
+        vault.setFeePercent(5);
 
         vault.initialize();
-
-        strategy1 = new MockERC20Strategy(underlying);
-        strategy2 = new MockERC20Strategy(underlying);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -44,809 +35,152 @@ contract VaultsTest is DSTestPlus {
     //////////////////////////////////////////////////////////////*/
 
     function testAtomicDepositWithdraw() public {
-        underlying.mint(address(this), 1e18);
-        underlying.approve(address(vault), 1e18);
-
-        uint256 preDepositBal = underlying.balanceOf(address(this));
+        asset.mint(address(this), 1e18);
+        asset.approve(address(vault), 1e18);
+        uint256 preDepositBal = asset.balanceOf(address(this));
 
         vault.deposit(1e18, address(this));
+        {
+            assertEq(vault.totalAssets(), 1e18);
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), 1e18);
-        assertEq(vault.totalFloat(), 1e18);
-        assertEq(vault.balanceOf(address(this)), 1e18);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 1e18);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal - 1e18);
+            assertEq(vault.totalSupply(), 1e18);
+            assertEq(vault.convertToShares(1e18), vault.totalSupply());
+
+            assertEq(asset.balanceOf(address(this)), preDepositBal - 1e18);
+            assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+        }
 
         vault.withdraw(1e18, address(this), address(this));
+        {
+            assertEq(vault.totalSupply(), 0);
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), 0);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.balanceOf(address(this)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal);
+            assertEq(vault.totalAssets(), 0);
+
+            assertEq(asset.balanceOf(address(this)), preDepositBal);
+        }
     }
 
-    function testDepositWithdraw(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e27);
-
-        underlying.mint(address(this), amount);
-        underlying.approve(address(vault), amount);
-
-        uint256 preDepositBal = underlying.balanceOf(address(this));
-
-        vault.deposit(amount, address(this));
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.totalFloat(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal - amount);
-
-        vault.withdraw(amount, address(this), address(this));
+    //     function testDepositWithdraw(uint256 amount) public {
+    //         amount = bound(amount, 1e5, 1e27);
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), 0);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.balanceOf(address(this)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal);
-    }
+    //         underlying.mint(address(this), amount);
+    //         underlying.approve(address(vault), amount);
 
-    function testAtomicDepositRedeem() public {
-        underlying.mint(address(this), 1e18);
-        underlying.approve(address(vault), 1e18);
+    //         uint256 preDepositBal = underlying.balanceOf(address(this));
 
-        uint256 preDepositBal = underlying.balanceOf(address(this));
+    //         vault.deposit(amount, address(this));
 
-        vault.deposit(1e18, address(this));
+    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), 1e18);
-        assertEq(vault.totalFloat(), 1e18);
-        assertEq(vault.balanceOf(address(this)), 1e18);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 1e18);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal - 1e18);
+    //         assertEq(vault.totalAssets(), amount);
+    //         assertEq(vault.balanceOf(address(this)), amount);
+    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
+    //         assertEq(underlying.balanceOf(address(this)), preDepositBal - amount);
 
-        vault.redeem(1e18, address(this), address(this));
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), 0);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.balanceOf(address(this)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal);
-    }
-
-    function testDepositRedeem(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e27);
-
-        underlying.mint(address(this), amount);
-        underlying.approve(address(vault), amount);
-
-        uint256 preDepositBal = underlying.balanceOf(address(this));
-
-        vault.deposit(amount, address(this));
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.totalFloat(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal - amount);
-
-        vault.redeem(amount, address(this), address(this));
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), 0);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.balanceOf(address(this)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-        assertEq(underlying.balanceOf(address(this)), preDepositBal);
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                 DEPOSIT/WITHDRAWAL SANITY CHECK TESTS
-    //////////////////////////////////////////////////////////////*/
-
-    function testFailDepositWithNotEnoughApproval(uint256 amount) public {
-        underlying.mint(address(this), amount / 2);
-        underlying.approve(address(vault), amount / 2);
-
-        vault.deposit(amount, address(this));
-    }
-
-    function testFailWithdrawWithNotEnoughBalance(uint256 amount) public {
-        underlying.mint(address(this), amount / 2);
-        underlying.approve(address(vault), amount / 2);
-
-        vault.deposit(amount / 2, address(this));
-
-        vault.withdraw(amount, address(this), address(this));
-    }
-
-    function testFailRedeemWithNotEnoughBalance(uint256 amount) public {
-        underlying.mint(address(this), amount / 2);
-        underlying.approve(address(vault), amount / 2);
-
-        vault.deposit(amount / 2, address(this));
-
-        vault.redeem(amount, address(this), address(this));
-    }
-
-    function testFailWithdrawWithNoBalance(uint256 amount) public {
-        if (amount == 0) amount = 1;
-        vault.withdraw(amount, address(this), address(this));
-    }
-
-    function testFailRedeemWithNoBalance(uint256 amount) public {
-        vault.redeem(amount, address(this), address(this));
-    }
-
-    function testFailDepositWithNoApproval(uint256 amount) public {
-        vault.deposit(amount, address(this));
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                     STRATEGY DEPOSIT/WITHDRAWAL TESTS
-    //////////////////////////////////////////////////////////////*/
+    //         vault.withdraw(amount, address(this), address(this));
 
-    function testAtomicEnterExitSinglePool(uint256 amount) public {
-        amount = bound(amount, 1e12, 1e27);
+    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+    //         assertEq(vault.totalAssets(), 0);
+    //         assertEq(vault.balanceOf(address(this)), 0);
+    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
+    //         assertEq(underlying.balanceOf(address(this)), preDepositBal);
+    //     }
 
-        underlying.mint(address(this), amount);
-        underlying.approve(address(vault), amount);
-        vault.deposit(amount, address(this));
+    //     function testAtomicDepositRedeem() public {
+    //         underlying.mint(address(this), 1e18);
+    //         underlying.approve(address(vault), 1e18);
 
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount);
+    //         uint256 preDepositBal = underlying.balanceOf(address(this));
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
+    //         vault.deposit(1e18, address(this));
 
-        vault.withdrawFromStrategy(strategy1, amount / 2);
+    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+    //         assertEq(vault.totalAssets(), 1e18);
+    //         assertEq(vault.balanceOf(address(this)), 1e18);
+    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 1e18);
+    //         assertEq(asset.balanceOf(address(this)), preDepositBal - 1e18);
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.totalFloat(), amount / 2);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertApproxEq(vault.totalStrategyHoldings(), amount / 2, 2);
+    //         vault.redeem(1e18, address(this), address(this));
 
-        vault.withdrawFromStrategy(strategy1, amount / 2);
+    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+    //         assertEq(vault.totalAssets(), 0);
+    //         assertEq(vault.balanceOf(address(this)), 0);
+    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
+    //         assertEq(underlying.balanceOf(address(this)), preDepositBal);
+    //     }
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertApproxEq(vault.totalFloat(), amount, 2); // Approx
-        assertEq(vault.totalStrategyHoldings() / 10, 0); // Aprox
-    }
+    //     function testDepositRedeem(uint256 amount) public {
+    //         amount = bound(amount, 1e5, 1e27);
 
-    function testAtomicEnterExitMultiPool(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
+    //         underlying.mint(address(this), amount);
+    //         underlying.approve(address(vault), amount);
 
-        underlying.mint(address(this), amount);
-        underlying.approve(address(vault), amount);
-        vault.deposit(amount, address(this));
+    //         uint256 preDepositBal = underlying.balanceOf(address(this));
 
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount / 2);
+    //         vault.deposit(amount, address(this));
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount / 2);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertApproxEq(vault.totalFloat(), amount / 2, 2); // Approx
+    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+    //         assertEq(vault.totalAssets(), amount);
+    //         assertEq(vault.balanceOf(address(this)), amount);
+    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
+    //         assertEq(underlying.balanceOf(address(this)), preDepositBal - amount);
 
-        vault.trustStrategy(strategy2);
-        vault.depositIntoStrategy(strategy2, amount / 2);
+    //         vault.redeem(amount, address(this), address(this));
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertApproxEq(vault.totalStrategyHoldings(), amount, 2); // Approx
-        assertLt(vault.totalFloat(), 2);
+    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+    //         assertEq(vault.totalAssets(), 0);
+    //         assertEq(vault.balanceOf(address(this)), 0);
+    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
+    //         assertEq(underlying.balanceOf(address(this)), preDepositBal);
+    //     }
 
-        vault.withdrawFromStrategy(strategy1, amount / 2);
+    //     /*///////////////////////////////////////////////////////////////
+    //                  DEPOSIT/WITHDRAWAL SANITY CHECK TESTS
+    //     //////////////////////////////////////////////////////////////*/
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount / 2);
-        assertEq(vault.totalAssets(), amount);
-        assertApproxEq(vault.totalFloat(), amount / 2, 2); // Approx
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
+    //     function testFailDepositWithNotEnoughApproval(uint256 amount) public {
+    //         underlying.mint(address(this), amount / 2);
+    //         underlying.approve(address(vault), amount / 2);
 
-        vault.withdrawFromStrategy(strategy2, amount / 2);
+    //         vault.deposit(amount, address(this));
+    //     }
 
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.totalFloat(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-    }
-
-    /*///////////////////////////////////////////////////////////////
-              STRATEGY DEPOSIT/WITHDRAWAL SANITY CHECK TESTS
-    //////////////////////////////////////////////////////////////*/
-
-    function testFailDepositIntoStrategyWithNotEnoughBalance(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-
-        underlying.mint(address(this), amount / 2);
-        underlying.approve(address(vault), amount / 2);
-
-        vault.deposit(amount / 2, address(this));
-
-        vault.trustStrategy(strategy1);
-
-        vault.depositIntoStrategy(strategy1, amount);
-    }
-
-    function testFailWithdrawFromStrategyWithNotEnoughBalance(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-
-        underlying.mint(address(this), amount / 2);
-        underlying.approve(address(vault), amount / 2);
-
-        vault.deposit(amount / 2, address(this));
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount / 2);
-
-        vault.withdrawFromStrategy(strategy1, amount);
-    }
-
-    function testFailWithdrawFromStrategyWithoutTrust(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-
-        underlying.mint(address(this), amount);
-        underlying.approve(address(vault), amount);
-
-        vault.deposit(amount, address(this));
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount);
-
-        vault.distrustStrategy(strategy1);
-        vault.withdrawFromStrategy(strategy1, amount);
-    }
-
-    function testFailDepositIntoStrategyWithNoBalance(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount);
-    }
-
-    function testFailWithdrawFromStrategyWithNoBalance(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-
-        vault.trustStrategy(strategy1);
-        vault.withdrawFromStrategy(strategy1, 1e18);
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                             HARVEST TESTS
-    //////////////////////////////////////////////////////////////*/
-
-    function testProfitableHarvest(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-        uint256 total = (1.5e18 * amount) / 1e18;
-
-        underlying.mint(address(this), total);
-        underlying.approve(address(vault), amount);
-        vault.deposit(amount, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount);
-        vault.pushToWithdrawalStack(strategy1);
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(vault.totalSupply(), amount);
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), 0);
-
-        underlying.transfer(address(strategy1), amount / 2);
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(vault.totalSupply(), amount);
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), 0);
-        assertEq(vault.lastHarvest(), 0);
-        assertEq(vault.lastHarvestWindowStart(), 0);
-
-        Strategy[] memory strategiesToHarvest = new Strategy[](1);
-        strategiesToHarvest[0] = strategy1;
-
-        vault.harvest(strategiesToHarvest);
-        uint256 startingTimestamp = block.timestamp;
-
-        assertEq(vault.lastHarvest(), startingTimestamp);
-        assertEq(vault.lastHarvestWindowStart(), startingTimestamp);
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertApproxEq(vault.totalStrategyHoldings(), total, 1);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), (1.05e18 * amount) / 1e18);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(vault.totalSupply(), (1.05e18 * amount) / 1e18);
-        assertEq(vault.balanceOf(address(vault)), (0.05e18 * amount) / 1e18);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), (0.05e18 * amount) / 1e18);
-
-        hevm.warp(block.timestamp + (vault.harvestDelay() / 2));
-
-        assertEq(vault.totalStrategyHoldings(), total);
-        assertEq(vault.totalFloat(), 0);
-        assertGt(vault.totalAssets(), amount);
-        assertLt(vault.totalAssets(), total);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.totalSupply(), (1.05e18 * amount) / 1e18);
-        assertEq(vault.balanceOf(address(vault)), (0.05e18 * amount) / 1e18);
-
-        assertGt(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertLt(vault.convertToAssets(vault.balanceOf(address(this))), (1.25e18 * amount) / 1e18);
-        assertGt(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertLt(vault.convertToAssets(10**vault.decimals()), 1.25e18);
-
-        hevm.warp(block.timestamp + vault.harvestDelay());
-
-        assertEq(vault.totalStrategyHoldings(), total);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), total);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.totalSupply(), (1.05e18 * amount) / 1e18);
-        assertEq(vault.balanceOf(address(vault)), (0.05e18 * amount) / 1e18);
-
-        assertGt(vault.convertToAssets(vault.balanceOf(address(this))), (1.4e18 * amount) / 1e18);
-        assertLt(vault.convertToAssets(vault.balanceOf(address(this))), (1.5e18 * amount) / 1e18);
-        assertGt(vault.convertToAssets(10**vault.decimals()), 1.4e18);
-        assertLt(vault.convertToAssets(10**vault.decimals()), 1.5e18);
-
-        vault.redeem(amount, address(this), address(this));
-
-        assertGt(vault.convertToAssets(10**vault.decimals()), 1.4e18);
-        assertEq(vault.totalStrategyHoldings(), vault.totalAssets() - vault.totalFloat());
-        assertGt(vault.totalFloat(), 0);
-        assertGt(vault.totalAssets(), 0);
-        assertEq(vault.balanceOf(address(this)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-        assertEq(vault.totalSupply(), (0.05e18 * amount) / 1e18);
-        assertEq(vault.balanceOf(address(vault)), (0.05e18 * amount) / 1e18);
-
-        assertGt(vault.totalFloat(), 0);
-        assertGt(vault.convertToAssets(10**vault.decimals()), 1.4e18);
-        assertLt(vault.convertToAssets(10**vault.decimals()), 1.5e18);
-    }
-
-    function testUnprofitableHarvest(uint256 amount) public {
-        amount = bound(amount, 1e5, 1e36);
-
-        underlying.mint(address(this), amount);
-
-        underlying.approve(address(vault), amount);
-        vault.deposit(amount, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, amount);
-        vault.pushToWithdrawalStack(strategy1);
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(vault.totalSupply(), amount);
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), 0);
-
-        strategy1.simulateLoss(amount / 2);
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), amount);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), amount);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-        assertEq(vault.totalSupply(), amount);
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), 0);
-
-        assertEq(vault.lastHarvest(), 0);
-        assertEq(vault.lastHarvestWindowStart(), 0);
-
-        Strategy[] memory strategiesToHarvest = new Strategy[](1);
-        strategiesToHarvest[0] = strategy1;
-
-        vault.harvest(strategiesToHarvest);
+    //     function testFailWithdrawWithNotEnoughBalance(uint256 amount) public {
+    //         underlying.mint(address(this), amount / 2);
+    //         underlying.approve(address(vault), amount / 2);
 
-        uint256 startingTimestamp = block.timestamp;
-
-        assertEq(vault.lastHarvest(), startingTimestamp);
-        assertEq(vault.lastHarvestWindowStart(), startingTimestamp);
+    //         vault.deposit(amount / 2, address(this));
 
-        // assertEq(vault.convertToAssets(10**vault.decimals()), 0.5e18);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.balanceOf(address(this)), amount);
-        assertApproxEq(vault.convertToAssets(vault.balanceOf(address(this))), amount / 2, 1);
-        assertEq(vault.totalSupply(), amount);
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), 0);
-        assertApproxEq(vault.totalAssets(), amount / 2, 1);
-        assertApproxEq(vault.totalStrategyHoldings(), amount / 2, 1);
+    //         vault.withdraw(amount, address(this), address(this));
+    //     }
 
-        console.log(amount == vault.balanceOf(address(this)));
-        vault.redeem(amount, address(this), address(this));
+    //     function testFailRedeemWithNotEnoughBalance(uint256 amount) public {
+    //         underlying.mint(address(this), amount / 2);
+    //         underlying.approve(address(vault), amount / 2);
 
-        assertApproxEq(underlying.balanceOf(address(this)), amount / 2, 1);
-        assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-        assertEq(vault.totalStrategyHoldings(), 0);
-        assertEq(vault.totalFloat(), 0);
-        assertEq(vault.totalAssets(), 0);
-        assertEq(vault.balanceOf(address(this)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-        assertEq(vault.totalSupply(), 0);
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.convertToAssets(vault.balanceOf(address(vault))), 0);
-    }
+    //         vault.deposit(amount / 2, address(this));
 
-    function testMultipleHarvestsInWindow() public {
-        underlying.mint(address(this), 1.5e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 0.5e18);
-
-        vault.trustStrategy(strategy2);
-        vault.depositIntoStrategy(strategy2, 0.5e18);
-
-        underlying.transfer(address(strategy1), 0.25e18);
-        underlying.transfer(address(strategy2), 0.25e18);
-
-        assertEq(vault.lastHarvest(), 0);
-        assertEq(vault.lastHarvestWindowStart(), 0);
-
-        Strategy[] memory strategiesToHarvest = new Strategy[](2);
-        strategiesToHarvest[0] = strategy1;
-        strategiesToHarvest[1] = strategy2;
-
-        vault.harvest(strategiesToHarvest);
-
-        uint256 startingTimestamp = block.timestamp;
-
-        assertEq(vault.lastHarvest(), startingTimestamp);
-        assertEq(vault.lastHarvestWindowStart(), startingTimestamp);
-
-        hevm.warp(block.timestamp + (vault.harvestWindow() / 2));
-
-        uint256 exchangeRateBeforeHarvest = vault.convertToAssets(10**vault.decimals());
-
-        vault.harvest(strategiesToHarvest);
-
-        assertEq(vault.convertToAssets(10**vault.decimals()), exchangeRateBeforeHarvest);
-
-        assertEq(vault.lastHarvest(), block.timestamp);
-        assertEq(vault.lastHarvestWindowStart(), startingTimestamp);
-    }
-
-    function testUpdatingHarvestDelay() public {
-        assertEq(vault.harvestDelay(), 6 hours);
-        assertEq(vault.nextHarvestDelay(), 0);
-
-        vault.setHarvestDelay(12 hours);
-
-        assertEq(vault.harvestDelay(), 6 hours);
-        assertEq(vault.nextHarvestDelay(), 12 hours);
-
-        vault.trustStrategy(strategy1);
-
-        Strategy[] memory strategiesToHarvest = new Strategy[](1);
-        strategiesToHarvest[0] = strategy1;
-
-        vault.harvest(strategiesToHarvest);
-
-        assertEq(vault.harvestDelay(), 12 hours);
-        assertEq(vault.nextHarvestDelay(), 0);
-    }
-
-    function testClaimFees() public {
-        underlying.mint(address(this), 1e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.transfer(address(vault), 1e18);
-
-        assertEq(vault.balanceOf(address(vault)), 1e18);
-        assertEq(vault.balanceOf(address(this)), 0);
-
-        vault.claimFees(1e18);
-
-        assertEq(vault.balanceOf(address(vault)), 0);
-        assertEq(vault.balanceOf(address(this)), 1e18);
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                        HARVEST SANITY CHECK TESTS
-    //////////////////////////////////////////////////////////////*/
-
-    function testFailHarvestAfterWindowBeforeDelay() public {
-        underlying.mint(address(this), 1.5e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 0.5e18);
-
-        vault.trustStrategy(strategy2);
-        vault.depositIntoStrategy(strategy2, 0.5e18);
-
-        Strategy[] memory strategiesToHarvest = new Strategy[](2);
-        strategiesToHarvest[0] = strategy1;
-        strategiesToHarvest[1] = strategy2;
-
-        vault.harvest(strategiesToHarvest);
-
-        hevm.warp(block.timestamp + vault.harvestWindow() + 1);
-
-        vault.harvest(strategiesToHarvest);
-    }
-
-    function testFailHarvestUntrustedStrategy() public {
-        underlying.mint(address(this), 1e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 1e18);
-
-        vault.distrustStrategy(strategy1);
-
-        Strategy[] memory strategiesToHarvest = new Strategy[](1);
-        strategiesToHarvest[0] = strategy1;
-
-        vault.harvest(strategiesToHarvest);
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                        WITHDRAWAL STACK TESTS
-    //////////////////////////////////////////////////////////////*/
-
-    function testPushingToWithdrawalStack() public {
-        vault.pushToWithdrawalStack(Strategy(address(69)));
-        vault.pushToWithdrawalStack(Strategy(address(420)));
-        vault.pushToWithdrawalStack(Strategy(address(1337)));
-        vault.pushToWithdrawalStack(Strategy(address(69420)));
-
-        assertEq(vault.getWithdrawalStack().length, 4);
-
-        assertEq(address(vault.withdrawalStack(0)), address(69));
-        assertEq(address(vault.withdrawalStack(1)), address(420));
-        assertEq(address(vault.withdrawalStack(2)), address(1337));
-        assertEq(address(vault.withdrawalStack(3)), address(69420));
-    }
-
-    function testPoppingFromWithdrawalStack() public {
-        vault.pushToWithdrawalStack(Strategy(address(69)));
-        vault.pushToWithdrawalStack(Strategy(address(420)));
-        vault.pushToWithdrawalStack(Strategy(address(1337)));
-        vault.pushToWithdrawalStack(Strategy(address(69420)));
-
-        vault.popFromWithdrawalStack();
-        assertEq(vault.getWithdrawalStack().length, 3);
-
-        vault.popFromWithdrawalStack();
-        assertEq(vault.getWithdrawalStack().length, 2);
-
-        vault.popFromWithdrawalStack();
-        assertEq(vault.getWithdrawalStack().length, 1);
-
-        vault.popFromWithdrawalStack();
-        assertEq(vault.getWithdrawalStack().length, 0);
-    }
-
-    function testReplaceWithdrawalStackIndex() public {
-        Strategy[] memory newStack = new Strategy[](4);
-        newStack[0] = Strategy(address(1));
-        newStack[1] = Strategy(address(2));
-        newStack[2] = Strategy(address(3));
-        newStack[3] = Strategy(address(4));
-
-        vault.setWithdrawalStack(newStack);
-
-        vault.replaceWithdrawalStackIndex(1, Strategy(address(420)));
-
-        assertEq(vault.getWithdrawalStack().length, 4);
-        assertEq(address(vault.withdrawalStack(1)), address(420));
-    }
-
-    function testReplaceWithdrawalStackIndexWithTip() public {
-        Strategy[] memory newStack = new Strategy[](4);
-        newStack[0] = Strategy(address(1001));
-        newStack[1] = Strategy(address(1002));
-        newStack[2] = Strategy(address(1003));
-        newStack[3] = Strategy(address(1004));
-
-        vault.setWithdrawalStack(newStack);
-
-        vault.replaceWithdrawalStackIndexWithTip(1);
-
-        assertEq(vault.getWithdrawalStack().length, 3);
-        assertEq(address(vault.withdrawalStack(2)), address(1003));
-        assertEq(address(vault.withdrawalStack(1)), address(1004));
-    }
-
-    function testSwapWithdrawalStackIndexes() public {
-        Strategy[] memory newStack = new Strategy[](4);
-        newStack[0] = Strategy(address(1001));
-        newStack[1] = Strategy(address(1002));
-        newStack[2] = Strategy(address(1003));
-        newStack[3] = Strategy(address(1004));
-
-        vault.setWithdrawalStack(newStack);
-
-        vault.swapWithdrawalStackIndexes(1, 2);
-
-        assertEq(vault.getWithdrawalStack().length, 4);
-        assertEq(address(vault.withdrawalStack(1)), address(1003));
-        assertEq(address(vault.withdrawalStack(2)), address(1002));
-    }
-
-    function testFailPushStackFull() public {
-        Strategy[] memory fullStack = new Strategy[](32);
-
-        vault.setWithdrawalStack(fullStack);
-
-        vault.pushToWithdrawalStack(Strategy(address(69)));
-    }
-
-    function testFailSetStackTooBig() public {
-        Strategy[] memory tooBigStack = new Strategy[](33);
-
-        vault.setWithdrawalStack(tooBigStack);
-    }
-
-    function testFailPopStackEmpty() public {
-        vault.popFromWithdrawalStack();
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                            EDGE CASE TESTS
-    //////////////////////////////////////////////////////////////*/
-
-    function testWithdrawingWithDuplicateStrategiesInStack() public {
-        underlying.mint(address(this), 1e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 0.5e18);
-
-        vault.trustStrategy(strategy2);
-        vault.depositIntoStrategy(strategy2, 0.5e18);
-
-        vault.pushToWithdrawalStack(strategy1);
-        vault.pushToWithdrawalStack(strategy1);
-        vault.pushToWithdrawalStack(strategy2);
-        vault.pushToWithdrawalStack(strategy1);
-        vault.pushToWithdrawalStack(strategy1);
-
-        assertEq(vault.getWithdrawalStack().length, 5);
-
-        vault.redeem(1e18, address(this), address(this));
-
-        assertEq(vault.getWithdrawalStack().length, 2);
-
-        assertEq(address(vault.withdrawalStack(0)), address(strategy1));
-        assertEq(address(vault.withdrawalStack(1)), address(strategy1));
-    }
-
-    function testWithdrawingWithUntrustedStrategyInStack() public {
-        underlying.mint(address(this), 1e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 0.5e18);
-
-        vault.trustStrategy(strategy2);
-        vault.depositIntoStrategy(strategy2, 0.5e18);
-
-        vault.pushToWithdrawalStack(strategy2);
-        vault.pushToWithdrawalStack(strategy2);
-        vault.pushToWithdrawalStack(new MockERC20Strategy(underlying));
-        vault.pushToWithdrawalStack(strategy1);
-        vault.pushToWithdrawalStack(strategy1);
-
-        assertEq(vault.getWithdrawalStack().length, 5);
-
-        vault.redeem(1e18, address(this), address(this));
-
-        assertEq(vault.getWithdrawalStack().length, 1);
-
-        assertEq(address(vault.withdrawalStack(0)), address(strategy2));
-    }
-
-    function testFailTrustStrategyWithWrongUnderlying() public {
-        MockERC20 wrongUnderlying = new MockERC20("Not The Right Token", "TKN2", 18);
-
-        MockERC20Strategy badStrategy = new MockERC20Strategy(wrongUnderlying);
-
-        vault.trustStrategy(badStrategy);
-    }
-
-    function testFailTrustStrategyWithETHUnderlying() public {
-        MockETHStrategy ethStrategy = new MockETHStrategy();
-
-        vault.trustStrategy(ethStrategy);
-    }
-
-    function testFailWithdrawWithEmptyStack() public {
-        underlying.mint(address(this), 1e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 1e18);
-
-        vault.redeem(1e18, address(this), address(this));
-    }
-
-    function testFailWithdrawWithIncompleteStack() public {
-        underlying.mint(address(this), 1e18);
-
-        underlying.approve(address(vault), 1e18);
-        vault.deposit(1e18, address(this));
-
-        vault.trustStrategy(strategy1);
-        vault.depositIntoStrategy(strategy1, 0.5e18);
-
-        vault.pushToWithdrawalStack(strategy1);
-
-        vault.trustStrategy(strategy2);
-        vault.depositIntoStrategy(strategy2, 0.5e18);
-
-        vault.redeem(1e18, address(this), address(this));
-    }
-
-    function testFailInitializeTwice() public {
-        vault.initialize();
-    }
-
-    function testDestroyVault() public {
-        vault.destroy();
-    }
+    //         vault.redeem(amount, address(this), address(this));
+    //     }
+
+    //     function testFailWithdrawWithNoBalance(uint256 amount) public {
+    //         if (amount == 0) amount = 1;
+    //         vault.withdraw(amount, address(this), address(this));
+    //     }
+
+    //     function testFailRedeemWithNoBalance(uint256 amount) public {
+    //         vault.redeem(amount, address(this), address(this));
+    //     }
+
+    //     function testFailDepositWithNoApproval(uint256 amount) public {
+    //         vault.deposit(amount, address(this));
+    //     }
+
+    //     function testFailInitializeTwice() public {
+    //         vault.initialize();
+    //     }
+
+    //     function testDestroyVault() public {
+    //         vault.destroy();
+    //     }
 }
