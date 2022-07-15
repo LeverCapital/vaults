@@ -60,37 +60,38 @@ contract VaultsTest is DSTestPlus {
         }
     }
 
-    //     function testDepositWithdraw(uint256 amount) public {
-    //         amount = bound(amount, 1e5, 1e27);
+    function testDepositWithdraw(uint256 amount) public {
+        amount = bound(amount, 1, 1e27);
+        asset.mint(address(this), amount);
+        asset.approve(address(vault), amount);
+        uint256 preDepositBal = asset.balanceOf(address(this));
 
-    //         underlying.mint(address(this), amount);
-    //         underlying.approve(address(vault), amount);
+        vault.deposit(amount, address(this));
+        {
+            assertEq(vault.totalAssets(), amount);
 
-    //         uint256 preDepositBal = underlying.balanceOf(address(this));
+            assertEq(vault.totalSupply(), amount);
+            assertEq(vault.convertToShares(amount), vault.totalSupply());
 
-    //         vault.deposit(amount, address(this));
+            assertEq(asset.balanceOf(address(this)), preDepositBal - amount);
+            assertEq(vault.convertToAssets(amount), amount);
+        }
 
-    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
+        vault.withdraw(amount, address(this), address(this));
+        {
+            assertEq(vault.totalSupply(), 0);
 
-    //         assertEq(vault.totalAssets(), amount);
-    //         assertEq(vault.balanceOf(address(this)), amount);
-    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-    //         assertEq(underlying.balanceOf(address(this)), preDepositBal - amount);
+            assertEq(vault.totalAssets(), 0);
 
-    //         vault.withdraw(amount, address(this), address(this));
-
-    //         assertEq(vault.convertToAssets(10**vault.decimals()), 1e18);
-    //         assertEq(vault.totalAssets(), 0);
-    //         assertEq(vault.balanceOf(address(this)), 0);
-    //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-    //         assertEq(underlying.balanceOf(address(this)), preDepositBal);
-    //     }
+            assertEq(asset.balanceOf(address(this)), preDepositBal);
+        }
+    }
 
     //     function testAtomicDepositRedeem() public {
-    //         underlying.mint(address(this), 1e18);
-    //         underlying.approve(address(vault), 1e18);
+    //         asset.mint(address(this), 1e18);
+    //         asset.approve(address(vault), 1e18);
 
-    //         uint256 preDepositBal = underlying.balanceOf(address(this));
+    //         uint256 preDepositBal = asset.balanceOf(address(this));
 
     //         vault.deposit(1e18, address(this));
 
@@ -106,16 +107,16 @@ contract VaultsTest is DSTestPlus {
     //         assertEq(vault.totalAssets(), 0);
     //         assertEq(vault.balanceOf(address(this)), 0);
     //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-    //         assertEq(underlying.balanceOf(address(this)), preDepositBal);
+    //         assertEq(asset.balanceOf(address(this)), preDepositBal);
     //     }
 
     //     function testDepositRedeem(uint256 amount) public {
     //         amount = bound(amount, 1e5, 1e27);
 
-    //         underlying.mint(address(this), amount);
-    //         underlying.approve(address(vault), amount);
+    //         asset.mint(address(this), amount);
+    //         asset.approve(address(vault), amount);
 
-    //         uint256 preDepositBal = underlying.balanceOf(address(this));
+    //         uint256 preDepositBal = asset.balanceOf(address(this));
 
     //         vault.deposit(amount, address(this));
 
@@ -123,7 +124,7 @@ contract VaultsTest is DSTestPlus {
     //         assertEq(vault.totalAssets(), amount);
     //         assertEq(vault.balanceOf(address(this)), amount);
     //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), amount);
-    //         assertEq(underlying.balanceOf(address(this)), preDepositBal - amount);
+    //         assertEq(asset.balanceOf(address(this)), preDepositBal - amount);
 
     //         vault.redeem(amount, address(this), address(this));
 
@@ -131,56 +132,64 @@ contract VaultsTest is DSTestPlus {
     //         assertEq(vault.totalAssets(), 0);
     //         assertEq(vault.balanceOf(address(this)), 0);
     //         assertEq(vault.convertToAssets(vault.balanceOf(address(this))), 0);
-    //         assertEq(underlying.balanceOf(address(this)), preDepositBal);
+    //         assertEq(asset.balanceOf(address(this)), preDepositBal);
     //     }
 
-    //     /*///////////////////////////////////////////////////////////////
-    //                  DEPOSIT/WITHDRAWAL SANITY CHECK TESTS
-    //     //////////////////////////////////////////////////////////////*/
+    /*///////////////////////////////////////////////////////////////
+                 DEPOSIT/WITHDRAWAL SANITY CHECK TESTS
+    //////////////////////////////////////////////////////////////*/
 
-    //     function testFailDepositWithNotEnoughApproval(uint256 amount) public {
-    //         underlying.mint(address(this), amount / 2);
-    //         underlying.approve(address(vault), amount / 2);
+    function testFailDepositWithNotEnoughApproval(uint256 amount) public {
+        asset.mint(address(this), amount / 2);
+        asset.approve(address(vault), amount / 2);
 
-    //         vault.deposit(amount, address(this));
-    //     }
+        vault.deposit(amount, address(this));
+    }
 
-    //     function testFailWithdrawWithNotEnoughBalance(uint256 amount) public {
-    //         underlying.mint(address(this), amount / 2);
-    //         underlying.approve(address(vault), amount / 2);
+    function testFailWithdrawWithNotEnoughBalance(uint256 amount) public {
+        asset.mint(address(this), amount / 2);
+        asset.approve(address(vault), amount / 2);
 
-    //         vault.deposit(amount / 2, address(this));
+        vault.deposit(amount / 2, address(this));
 
-    //         vault.withdraw(amount, address(this), address(this));
-    //     }
+        vault.withdraw(amount, address(this), address(this));
+    }
 
-    //     function testFailRedeemWithNotEnoughBalance(uint256 amount) public {
-    //         underlying.mint(address(this), amount / 2);
-    //         underlying.approve(address(vault), amount / 2);
+    function testFailRedeemWithNotEnoughBalance(uint256 amount) public {
+        asset.mint(address(this), amount / 2);
+        asset.approve(address(vault), amount / 2);
 
-    //         vault.deposit(amount / 2, address(this));
+        vault.deposit(amount / 2, address(this));
 
-    //         vault.redeem(amount, address(this), address(this));
-    //     }
+        vault.redeem(amount, address(this), address(this));
+    }
 
-    //     function testFailWithdrawWithNoBalance(uint256 amount) public {
-    //         if (amount == 0) amount = 1;
-    //         vault.withdraw(amount, address(this), address(this));
-    //     }
+    function testFailWithdrawWithNoBalance(uint256 amount) public {
+        if (amount == 0) amount = 1;
+        vault.withdraw(amount, address(this), address(this));
+    }
 
-    //     function testFailRedeemWithNoBalance(uint256 amount) public {
-    //         vault.redeem(amount, address(this), address(this));
-    //     }
+    function testFailRedeemWithNoBalance(uint256 amount) public {
+        vault.redeem(amount, address(this), address(this));
+    }
 
-    //     function testFailDepositWithNoApproval(uint256 amount) public {
-    //         vault.deposit(amount, address(this));
-    //     }
+    function testFailDepositWithNoApproval(uint256 amount) public {
+        vault.deposit(amount, address(this));
+    }
 
-    //     function testFailInitializeTwice() public {
-    //         vault.initialize();
-    //     }
+    /*///////////////////////////////////////////////////////////////
+                 DEPOSIT/WITHDRAWAL SECURITY TESTS
+    //////////////////////////////////////////////////////////////*/
 
-    //     function testDestroyVault() public {
-    //         vault.destroy();
-    //     }
+    /*///////////////////////////////////////////////////////////////
+                 VAULT MANAGEMENT TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testFailInitializeTwice() public {
+        vault.initialize();
+    }
+
+    function testDestroyVault() public {
+        vault.destroy();
+    }
 }

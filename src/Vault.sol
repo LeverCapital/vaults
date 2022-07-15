@@ -8,7 +8,6 @@ import {SafeCastLib} from "solmate/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
-import {WETH} from "solmate/tokens/WETH.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 
 /// @title WAGMI Vault (wagToken)
@@ -42,8 +41,11 @@ contract Vault is ERC4626, Auth {
 
     /// @notice Creates a new Vault
     /// @param _asset The ERC20 compliant token the Vault should accept.
-    constructor(ERC20 _asset, string memory _stratName,
-        string memory _stratSymbol)
+    constructor(
+        ERC20 _asset,
+        string memory _stratName,
+        string memory _stratSymbol
+    )
         ERC4626(
             // Underlying token
             _asset,
@@ -91,7 +93,6 @@ contract Vault is ERC4626, Auth {
     //////////////////////////////////////////////////////////////*/
 
     function afterDeposit(uint256, uint256) internal override {}
-
 
     /*///////////////////////////////////////////////////////////////
                         VAULT ACCOUNTING LOGIC
