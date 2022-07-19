@@ -46,8 +46,8 @@ contract Vault is ERC4626, Auth {
         string memory _stratName,
         string memory _stratSymbol
     )
+        // Underlying token
         ERC4626(
-            // Underlying token
             _asset,
             // ex: Zeno's Keep
             string(abi.encodePacked(_stratName, "'s Keep")),
@@ -56,7 +56,7 @@ contract Vault is ERC4626, Auth {
         )
         Auth(Auth(msg.sender).owner(), Auth(msg.sender).authority())
     {
-        BASE_UNIT = 10**decimals;
+        BASE_UNIT = 10 ** decimals;
 
         // Prevent minting of shares until
         // the initialize function is called.
@@ -101,6 +101,22 @@ contract Vault is ERC4626, Auth {
     /// @notice Calculates the total amount of assets the Vault holds.
     function totalAssets() public view override returns (uint256) {
         return asset.balanceOf(address(this));
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                             VAULT POSITIONS LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    bool public positionOpen = false;
+
+    /// @notice Open a Long position with stop loss and take profit
+    /// @param rvTokenAmount The amount of rvTokens to claim.
+    /// @dev Accrued fees are measured as rvTokens held by the Vault.
+    function goLong(uint256 rvTokenAmount) external requiresAuth {
+        emit FeesClaimed(msg.sender, rvTokenAmount);
+
+        // Transfer the provided amount of rvTokens to the caller.
+        ERC20(this).safeTransfer(msg.sender, rvTokenAmount);
     }
 
     /*///////////////////////////////////////////////////////////////

@@ -6,11 +6,6 @@ import {Authority} from "solmate/auth/Auth.sol";
 import {DSTestPlus} from "solmate/test/utils/DSTestPlus.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
 
-import {MockETHStrategy} from "./mocks/MockETHStrategy.sol";
-import {MockERC20Strategy} from "./mocks/MockERC20Strategy.sol";
-
-import {Strategy} from "../interfaces/Strategy.sol";
-
 import {Vault} from "../Vault.sol";
 import {VaultFactory} from "../VaultFactory.sol";
 
