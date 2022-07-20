@@ -1,16 +1,11 @@
-// SPDX-License-Identifier: Unlicense
-pragma solidity >=0.6.0 <0.9.0;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <0.9.0;
 
-import "ds-test/test.sol";
-import "../stdlib.sol";
-import "../Vm.sol";
+import "../Test.sol";
 
-contract StdStorageTest is DSTest {
+contract StdStorageTest is Test {
     using stdStorage for StdStorage;
 
-    Vm public constant vm = Vm(HEVM_ADDRESS);
-
-    StdStorage stdstore;
     StorageTest test;
 
     function setUp() public {
@@ -222,6 +217,45 @@ contract StdStorageTest is DSTest {
         stdstore.target(address(test)).sig(test.tC.selector).find();
         stdstore.target(address(test)).sig(test.tD.selector).find();
     }
+
+    function testStorageReadBytes32() public {
+        bytes32 val = stdstore.target(address(test)).sig(test.tE.selector).read_bytes32();
+        assertEq(val, hex"1337");
+    }
+
+    function testStorageReadBool_False() public {
+        bool val = stdstore.target(address(test)).sig(test.tB.selector).read_bool();
+        assertEq(val, false);
+    }
+
+    function testStorageReadBool_True() public {
+        bool val = stdstore.target(address(test)).sig(test.tH.selector).read_bool();
+        assertEq(val, true);
+    }
+
+    function testStorageReadBool_Revert() public {
+        vm.expectRevert("stdStorage read_bool(StdStorage): Cannot decode. Make sure you are reading a bool.");
+        this.readNonBoolValue();
+    }
+
+    function readNonBoolValue() public {
+        stdstore.target(address(test)).sig(test.tE.selector).read_bool();
+    }
+
+    function testStorageReadAddress() public {
+        address val = stdstore.target(address(test)).sig(test.tF.selector).read_address();
+        assertEq(val, address(1337));
+    }
+
+    function testStorageReadUint() public {
+        uint256 val = stdstore.target(address(test)).sig(test.exists.selector).read_uint();
+        assertEq(val, 1);
+    }
+
+    function testStorageReadInt() public {
+        int256 val = stdstore.target(address(test)).sig(test.tG.selector).read_int();
+        assertEq(val, type(int256).min);
+    }
 }
 
 contract StorageTest {
@@ -249,7 +283,12 @@ contract StorageTest {
 
     mapping(address => bool) public map_bool;
 
-    constructor() public {
+    bytes32 public tE = hex"1337";
+    address public tF = address(1337);
+    int256 public tG = type(int256).min;
+    bool public tH = true;
+
+    constructor() {
         basic = UnpackedStruct({
             a: 1337,
             b: 1337
@@ -270,6 +309,7 @@ contract StorageTest {
 
     function hidden() public view returns (bytes32 t) {
         bytes32 slot = keccak256("my.random.var");
+        /// @solidity memory-safe-assembly
         assembly {
             t := sload(slot)
         }
