@@ -1,159 +1,275 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
-# GNU Make 4.2.1
+# GNU Make 4.3
 # Built for x86_64-pc-linux-gnu
-# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# Copyright (C) 1988-2020 Free Software Foundation, Inc.
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jun 22 13:50:12 2022
+# Make data base, printed on Wed Jul 20 17:54:29 2022
 
 # Variables
 
-# automatic
-<D = $(patsubst %/,%,$(dir $<))
-# automatic
-?F = $(notdir $?)
 # environment
-WSLENV = VSCODE_WSL_EXT_LOCATION/up
+GDK_BACKEND = x11
+# environment
+LC_ALL = C
+# environment
+GNOME_SHELL_SESSION_MODE = pop
+# environment
+SSH_AGENT_LAUNCHER = gnome-keyring
+# environment
+GJS_DEBUG_OUTPUT = stderr
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-29234ad9-590b-4a9e-aa1c-f4a09684c1eb.sock
+# environment
+MANDATORY_PATH = /usr/share/gconf/pop.mandatory.path
+# environment
+LC_NAME = en_US.UTF-8
+# environment
+LC_NUMERIC = en_US.UTF-8
+# environment
+VSCODE_CWD = /home/rampeylabs/Documents/vaults
+# environment
+WINDOWID = 39845903
+# environment
+WINDOWPATH = 2
+# environment
+LC_ADDRESS = en_US.UTF-8
 # default
-.SHELLFLAGS := -c
+MAKE_COMMAND := make
 # environment
-VSCODE_LOG_NATIVE = false
-# automatic
-?D = $(patsubst %/,%,$(dir $?))
+QT_ACCESSIBILITY = 1
+# environment
+GOPATH = /home/rampeylabs/go/bin
 # automatic
 @D = $(patsubst %/,%,$(dir $@))
-# automatic
-@F = $(notdir $@)
-# makefile
-CURDIR := /mnt/c/Users/pr525/Documents/vaults
-# makefile
-SHELL = /bin/sh
 # environment
-VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
-# environment
-_ = /home/pr525/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630/node
-# makefile (from 'Makefile', line 1)
-MAKEFILE_LIST :=  Makefile
-# 'override' directive
-GNUMAKEFLAGS := 
-# environment
-VSCODE_VERBOSE_LOGGING = true
-# environment
-VSCODE_CWD = /mnt/c/Users/pr525/AppData/Local/Programs/Microsoft VS Code
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
-MAKE_HOST := x86_64-pc-linux-gnu
+.VARIABLES := 
 # environment
-PATH = /home/pr525/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630/bin/remote-cli:/home/pr525/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/mnt/c/Python310/Scripts/:/mnt/c/Python310/:/mnt/c/Program Files (x86)/Eclipse Adoptium/jdk-8.0.312.7-hotspot/bin:/mnt/c/Program Files/Eclipse Adoptium/jdk-8.0.322.6-hotspot/bin:/mnt/c/Program Files (x86)/Eclipse Adoptium/jre-8.0.312.7-hotspot/bin:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files/Microsoft SQL Server/110/Tools/Binn/:/mnt/c/Program Files/PuTTY/:/mnt/c/Program Files (x86)/Box/Box Edit/:/mnt/c/Program Files/Microsoft SQL Server/120/Tools/Binn/:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Users/pr525/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/pr525/AppData/Local/GitHubDesktop/bin:/mnt/c/Users/pr525/Documents/node-v16.14.2-win-x64:/mnt/c/Users/pr525/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/pr525/AppData/Roaming/npm:/usr/local/go-1.18/bin:/home/pr525/projects/go/bin:/home/pr525/.foundry/bin
+PWD = /home/rampeylabs/Documents/vaults
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
 # environment
 LSCOLORS = Gxfxcxdxbxegedabagacad
 # environment
-GOPATH = /home/pr525/projects/go
+XDG_DATA_DIRS = /usr/share/pop:/usr/share/gnome:/home/rampeylabs/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+# environment
+OLDPWD = /home/rampeylabs/Documents
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
 # environment
 VSCODE_LOG_STACK = false
-# environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-0cb890fd-6c49-466f-a7bc-d94a98efd084.sock
-# default
-.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
-# environment
-LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
 # automatic
 %F = $(notdir $%)
 # environment
-GOBIN = /home/pr525/projects/go/bin
+VSCODE_CODE_CACHE_PATH = /home/rampeylabs/.config/Code/CachedData/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5
+# environment
+LANG = C
+# environment
+SPACESHIP_VERSION = 3.12.4
+# environment
+XAUTHORITY = /run/user/1000/gdm/Xauthority
+# default
+.LOADED := 
+# default
+.INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
+# makefile
+MAKEFLAGS = pqrR
+# makefile
+CURDIR := /home/rampeylabs/Documents/vaults
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
-PWD = /mnt/c/Users/pr525/Documents/vaults
-# default
-.LOADED := 
-# environment
-VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
-# environment
-HOME = /home/pr525
-# environment
-LOGNAME = pr525
-# environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
-# environment
-ZSH = /home/pr525/.oh-my-zsh
-# environment
-VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
-^D = $(patsubst %/,%,$(dir $^))
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+MFLAGS = -pqrR
+# environment
+SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
+# default
+.SHELLFLAGS := -c
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/xdg-pop:/etc/xdg
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+XDG_SESSION_DESKTOP = pop
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST := Makefile
+# environment
+CONDA_SHLVL = 0
+# automatic
+@F = $(notdir $@)
+# environment
+ZSH = /home/rampeylabs/.oh-my-zsh
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+VSCODE_PID = 457807
+# environment
+XDG_SESSION_TYPE = x11
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# environment
+CONDA_PYTHON_EXE = /home/rampeylabs/miniconda3/bin/python
+# environment
+SESSION_MANAGER = local/pop-os:@/tmp/.ICE-unix/4235,unix/pop-os:/tmp/.ICE-unix/4235
+# automatic
+*F = $(notdir $*)
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+GNOME_DESKTOP_SESSION_ID = this-is-deprecated
+# makefile
+SHELL = /bin/sh
+# default
+MAKECMDGOALS := all
+# environment
+XMODIFIERS = @im=ibus
+# environment
+GJS_DEBUG_TOPICS = JS ERROR;JS LOG
+# environment
+SHLVL = 1
+# environment
+TERMINFO = /home/rampeylabs/.local/kitty.app/lib/kitty/terminfo
 # environment
 MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /home/rampeylabs/miniconda3/condabin:/home/rampeylabs/.local/kitty.app/bin:/home/rampeylabs/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/rampeylabs/Documents/darknet:/home/rampeylabs/go/bin:/home/rampeylabs/go/bin:/home/rampeylabs/.foundry/bin
+# environment
+SPACESHIP_ROOT = /home/rampeylabs/.oh-my-zsh/custom/themes/spaceship-prompt
 # default
-MAKECMDGOALS := all
+MAKEFILES := 
 # environment
-SHLVL = 0
-# default
-MAKE_VERSION := 4.2.1
+LANGUAGE = en_US:en
 # environment
-USER = pr525
-# makefile
-.DEFAULT_GOAL := all
-# environment
-GOROOT = /usr/local/go-1.18
-# environment
-NAME = RUNSTU-J4KQ163
-# environment
-LESS = -R
+LC_MONETARY = en_US.UTF-8
 # automatic
-%D = $(patsubst %/,%,$(dir $%))
+^F = $(notdir $^)
 # environment
-VSCODE_WSL_EXT_LOCATION = /mnt/c/Users/pr525/.vscode/extensions/ms-vscode-remote.remote-wsl-0.66.3
-# default
-MAKE_COMMAND := make
+LC_TIME = en_US.UTF-8
 # environment
-OLDPWD = /mnt/c/Users/pr525/AppData/Local/Programs/Microsoft VS Code
-# default
-.VARIABLES := 
-# automatic
-*F = $(notdir $*)
-# makefile
-MAKEFLAGS = pqrR
+INVOCATION_ID = 13bee1d03cb843a99ece614280f99205
 # environment
-MFLAGS = -pqrR
+VSCODE_LOG_NATIVE = false
+# environment
+USERNAME = rampeylabs
+# environment
+LC_TELEPHONE = en_US.UTF-8
 # automatic
-*D = $(patsubst %/,%,$(dir $*))
-# automatic
-+D = $(patsubst %/,%,$(dir $+))
+?F = $(notdir $?)
+# environment
+GTK_IM_MODULE = ibus
+# environment
+XDG_CURRENT_DESKTOP = Unity
+# environment
+LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
 # automatic
 +F = $(notdir $+)
 # environment
-VSCODE_HANDLES_SIGPIPE = true
+LESS = -R
+# environment
+DESKTOP_SESSION = pop
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = pop:GNOME
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+LOGNAME = rampeylabs
+# environment
+GIO_LAUNCHED_DESKTOP_FILE = /home/rampeylabs/.local/share/applications/kitty.desktop
+# makefile
+.DEFAULT_GOAL := all
+# environment
+SYSTEMD_EXEC_PID = 4274
+# environment
+KITTY_WINDOW_ID = 1
+# environment
+DISPLAY = :1
+# environment
+USER = rampeylabs
+# environment
+GTK_MODULES = gail:atk-bridge:appmenu-gtk-module
+# environment
+DEFAULTS_PATH = /usr/share/gconf/pop.default.path
 # default
-MAKEFILES := 
-# automatic
-<F = $(notdir $<)
+MAKE_VERSION := 4.3
+# environment
+MANAGERPID = 3998
+# environment
+LC_MEASUREMENT = en_US.UTF-8
+# environment
+GIO_LAUNCHED_DESKTOP_FILE_PID = 452455
 # environment
 PAGER = less
 # environment
-LC_ALL = C
+_ = /usr/bin/code
 # environment
-HOSTTYPE = x86_64
-# automatic
-^F = $(notdir $^)
-# default
-SUFFIXES := 
-# default
-.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+LC_PAPER = en_US.UTF-8
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
+# environment
+COLORTERM = truecolor
+# environment
+_CE_M = 
+# environment
+JOURNAL_STREAM = 8:40858
+# environment
+XDG_SESSION_CLASS = user
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /home/rampeylabs
+# environment
+QT_IM_MODULE = ibus
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-baceb588-1.67.2-main.sock
+# environment
+TERM = xterm-kitty
+# environment
+PAPERSIZE = letter
 # default
 .RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
 # environment
-LANG = C
+VSCODE_CLI = 1
 # environment
-TERM = xterm-256color
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink load
 # environment
-VSCODE_EXTHOST_WILL_SEND_SOCKET = true
+XDG_MENU_PREFIX = gnome-
 # environment
-WSL_DISTRO_NAME = Ubuntu20.04LTS
+CONDA_EXE = /home/rampeylabs/miniconda3/bin/conda
+# environment
+_CE_CONDA = 
+# environment
+GDMSESSION = pop
+# environment
+LC_IDENTIFICATION = en_US.UTF-8
 # variable set hash-table stats:
-# Load=71/1024=7%, Rehash=0, Collisions=4/99=4%
+# Load=129/1024=13%, Rehash=0, Collisions=6/162=4%
 
 # Pattern-specific Variable Values
 
@@ -161,37 +277,15 @@ WSL_DISTRO_NAME = Ubuntu20.04LTS
 
 # Directories
 
-# . (device 14, inode 34902897112460077): 25 files, no impossibilities.
+# . (device 2051, inode 9069642): 29 files, no impossibilities.
 
-# 25 files, no impossibilities in 1 directories.
+# 29 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 # No implicit rules.
 
 # Files
-
-all: solc install update
-#  Command line target.
-#  Implicit rule search has been done.
-#  File does not exist.
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/3=0%
-
-# Not a target:
-.SUFFIXES:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-Makefile:
-#  Implicit rule search has been done.
-#  Last modified 2022-06-03 12:41:35.7475472
-#  File has been updated.
-#  Successfully updated.
 
 update:
 #  Implicit rule search has not been done.
@@ -201,10 +295,12 @@ update:
 	 dapp update
 
 # Not a target:
-.DEFAULT:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+Makefile:
+#  Implicit rule search has been done.
+ 
+#  Last modified 2022-07-10 20:20:23.943534871
+#  File has been updated.
+#  Successfully updated.
 
 solc:
 #  Implicit rule search has not been done.
@@ -215,23 +311,38 @@ solc:
 # automatic
 # @ := solc
 # automatic
-# % := 
-# automatic
 # * := 
+# automatic
+# < := 
 # automatic
 # + := 
 # automatic
-# | := 
-# automatic
-# < := 
+# % := 
 # automatic
 # ^ := 
 # automatic
 # ? := 
+# automatic
+# | := 
 # variable set hash-table stats:
 # Load=8/32=25%, Rehash=0, Collisions=1/11=9%
 #  recipe to execute (from 'Makefile', line 3):
 	 nix-env -f https://github.com/dapphub/dapptools/archive/master.tar.gz -iA solc-static-versions.solc_0_8_10
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+all: solc install update
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/3=0%
 
 install:
 #  Implicit rule search has not been done.
@@ -239,6 +350,12 @@ install:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 5):
 	 npm install
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # files hash-table stats:
 # Load=7/1024=1%, Rehash=0, Collisions=0/25=0%
@@ -248,12 +365,12 @@ install:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 33 / storage = 294 B / avg = 8 B
-# current buf: size = 8162 B / used = 294 B / count = 33 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 37 / storage = 338 B / avg = 9 B
+# current buf: size = 8162 B / used = 338 B / count = 37 / avg = 9 B
 
-# strcache performance: lookups = 46 / hit rate = 28%
+# strcache performance: lookups = 50 / hit rate = 26%
 # hash-table stats:
-# Load=33/8192=0%, Rehash=0, Collisions=1/46=2%
-# Finished Make data base on Wed Jun 22 13:50:12 2022
+# Load=37/8192=0%, Rehash=0, Collisions=0/50=0%
+# Finished Make data base on Wed Jul 20 17:54:29 2022
 
  

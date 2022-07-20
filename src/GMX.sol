@@ -19,7 +19,7 @@ interface IPositionRouter {
 
 /// @title Interface for any Perp trading exchange
 /// @notice Contains methods to manage positions by Lever vaults
-abstract contract GMX is IExchange {
+contract GMX is IExchange {
     /*///////////////////////////////////////////////////////////////
                                  CONSTANTS
     //////////////////////////////////////////////////////////////*/

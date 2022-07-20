@@ -27,11 +27,11 @@ interface IExchange {
     /// @notice Close a Long/short position
     /// @dev This method creates a market order
     /// @param price Create an order at this price or 'better'
-    function closePosition(
-        OrderType order,
-        Market calldata market,
-        uint256 price,
-        uint256 size
-    ) external;
+    // function closePosition(
+    //     OrderType order,
+    //     Market calldata market,
+    //     uint256 price,
+    //     uint256 size
+    // ) external;
     // function openPositionAt(uint160 sqrtPriceX96) external;
 } // function closePositionAt(uint160 sqrtPriceX96) external;
