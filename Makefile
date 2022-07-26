@@ -5,3 +5,5 @@ solc:; nix-env -f https://github.com/dapphub/dapptools/archive/master.tar.gz -iA
 install:; npm install
 # Install dapp dependencies.
 update:; dapp update
+# Load .env variables
+env:; export $(grep -v '^#' .env | xargs -d '\n')

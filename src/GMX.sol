@@ -14,7 +14,7 @@ interface IPositionRouter {
         uint256 _acceptablePrice,
         uint256 _executionFee,
         bytes32 _referralCode
-    ) external;
+    ) external payable;
 }
 
 /// @title Interface for any Perp trading exchange
