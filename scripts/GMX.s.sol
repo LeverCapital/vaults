@@ -2,12 +2,8 @@
 pragma solidity ^0.8.10;
 
 import "forge-std/Script.sol";
-import "../src/GMX.sol";
+import {GMX, IPositionRouter, IRouter} from "../src/GMX.sol";
 import "forge-std/console.sol";
-
-interface IRouter {
-    function approvePlugin(address _plugin) external;
-}
 
 // Setup method before we can start placing orders on GMX
 contract approveOrderBook is Script {
@@ -16,9 +12,7 @@ contract approveOrderBook is Script {
         address ROUTER = 0xaBBc5F99639c9B6bCb58544ddf04EFA6802F4064;
 
         IRouter router = IRouter(ROUTER);
-        address orderBook = 0x09f77E8A13De9a35a7231028187e9fD5DB8a2ACB;
-
-        router.approvePlugin(orderBook);
+        router.approvePlugin(0x3D6bA331e3D9702C5e8A8d254e5d8a285F223aba);
 
         vm.stopBroadcast();
     }
