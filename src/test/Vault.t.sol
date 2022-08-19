@@ -5,13 +5,16 @@ import {WETH} from "solmate/tokens/WETH.sol";
 import {Authority} from "solmate/auth/Auth.sol";
 import {DSTestPlus} from "solmate/test/utils/DSTestPlus.sol";
 import {MockERC20} from "solmate/test/utils/mocks/MockERC20.sol";
+import {ERC20} from "solmate/tokens/ERC20.sol";
+import "forge-std/Script.sol";
 
 import {Vault} from "../Vault.sol";
 import {VaultFactory} from "../VaultFactory.sol";
+import {IExchange, OrderType, Market} from "../interfaces/IExchange.sol";
 
 import "forge-std/console.sol";
 
-contract VaultsTest is DSTestPlus {
+contract VaultTest is DSTestPlus, Script {
     Vault vault;
     MockERC20 asset;
 
@@ -186,5 +189,51 @@ contract VaultsTest is DSTestPlus {
 
     function testDestroyVault() public {
         vault.destroy();
+    }
+}
+
+contract VaultPositionsTest is DSTestPlus, Script {
+    Vault vault;
+    ERC20 usdc;
+
+    function setUp() public {
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet")); // Setup fork testing
+
+        usdc = ERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8); // USDC token address on Arbitrum
+
+        vault = new VaultFactory(address(this), Authority(address(0))).deployVault(usdc, "test_strat", "TST");
+
+        vault.setFeePercent(5);
+
+        vault.initialize(); // Open for deposits/withdrawals
+
+        vault.approve(); // Open for trading!
+
+        // Add some eth to the contract
+        vm.deal(address(vault), 1 ether);
+        // Deposit some USDC in the vault
+        vm.prank(address(usdc));
+        usdc.transfer(address(this), 1e10);
+        usdc.approve(address(vault), 1e18);
+        vault.deposit(1e10, address(this));
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                        POSITIONS TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testLongOpenPosition() public {
+        Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
+        vault.openPosition(OrderType.Buy, market, 1168294400000000000000000000000000, 10941764059534511257600000000000);
+    }
+
+    function testShortOpenPosition() public {
+        Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
+        vault.openPosition(
+            OrderType.Sell,
+            market,
+            1168294400000000000000000000000000,
+            10941764059534511257600000000000
+        );
     }
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.10;
 
-import {IExchange, OrderType, Market} from "./interfaces/IExchange.sol";
+import {IExchange, OrderType, Market} from "../interfaces/IExchange.sol";
 
 interface IPositionRouter {
     function createIncreasePosition(
@@ -21,7 +21,7 @@ interface IRouter {
     function approvePlugin(address _plugin) external;
 }
 
-/// @title Interface for any Perp trading exchange
+/// @title Interface to the GMX exchange
 /// @notice Contains methods to manage positions by Lever vaults
 contract GMX is IExchange {
     /*///////////////////////////////////////////////////////////////
