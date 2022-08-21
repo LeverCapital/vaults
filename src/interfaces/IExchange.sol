@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.10;
 
-enum OrderType {
-    Buy,
-    Sell
-}
-
 struct Market {
     string quoteAsset;
     string baseAsset;
+}
+
+struct Order {
+    bool isBuy;
+    Market market;
+    uint256 acceptablePrice;
+    uint256 size;
+    uint256 collateral;
 }
 
 /// @title Interface for any Perp trading exchange
@@ -18,7 +21,6 @@ interface IExchange {
     /// @dev This method creates a market order
     /// @param price Create an order at this price or 'better'
     function openPosition(
-        OrderType order,
         Market calldata market,
         uint256 price,
         uint256 size

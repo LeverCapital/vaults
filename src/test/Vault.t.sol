@@ -10,7 +10,7 @@ import "forge-std/Script.sol";
 
 import {Vault} from "../Vault.sol";
 import {VaultFactory} from "../VaultFactory.sol";
-import {IExchange, OrderType, Market} from "../interfaces/IExchange.sol";
+import {IExchange, Market, Order} from "../interfaces/IExchange.sol";
 
 import "forge-std/console.sol";
 
@@ -222,18 +222,16 @@ contract VaultPositionsTest is DSTestPlus, Script {
                         POSITIONS TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testLongOpenPosition() public {
+    function testGoShort(uint256 price) public {
         Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
-        vault.openPosition(OrderType.Buy, market, 1168294400000000000000000000000000, 10941764059534511257600000000000);
-    }
+        Order memory sellOrder = Order({
+            isBuy: true,
+            market: market,
+            acceptablePrice: price, //1168294400000000000000000000000000
+            size: 10941764059534511257600000000000,
+            collateral: 100000
+        });
 
-    function testShortOpenPosition() public {
-        Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
-        vault.openPosition(
-            OrderType.Sell,
-            market,
-            1168294400000000000000000000000000,
-            10941764059534511257600000000000
-        );
+        vault.goShort(sellOrder, 1, 1);
     }
 }

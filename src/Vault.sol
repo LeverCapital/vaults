@@ -9,21 +9,8 @@ import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
-import {IExchange, OrderType, Market} from "./interfaces/IExchange.sol";
-
-interface IPositionRouter {
-    function createIncreasePosition(
-        address[] memory _path,
-        address _indexToken,
-        uint256 _amountIn,
-        uint256 _minOut,
-        uint256 _sizeDelta,
-        bool _isLong,
-        uint256 _acceptablePrice,
-        uint256 _executionFee,
-        bytes32 _referralCode
-    ) external payable;
-}
+import {IExchange, Order} from "./interfaces/IExchange.sol";
+import {GMX} from "./exchanges/GMX.sol";
 
 interface IRouter {
     function approvePlugin(address _plugin) external;
@@ -34,7 +21,7 @@ interface IRouter {
 /// @notice Vault contract which keeps track of PnL and ensures secure and non-custodial:
 /// - deposits and withdrawals
 /// - trade orders on any DEX
-contract Vault is ERC4626, Auth {
+contract Vault is ERC4626, Auth, GMX {
     using SafeCastLib for uint256;
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
@@ -46,21 +33,10 @@ contract Vault is ERC4626, Auth {
     /// @notice The maximum number of elements allowed on the withdrawal stack.
     /// @dev Needed to prevent denial of service attacks by queue operators.
     uint256 internal constant MAX_WITHDRAWAL_STACK_SIZE = 32;
-    /// @notice Address of PositionRouter contract
-    /// @dev Used to interact with the contract and manage positions
-    address internal constant POSITION_ROUTER = 0x3D6bA331e3D9702C5e8A8d254e5d8a285F223aba;
-    /// @notice Address of OrderBook contract
-    address internal constant ORDER_BOOK = 0x09f77E8A13De9a35a7231028187e9fD5DB8a2ACB;
-    /// @notice Address of Router contract
-    address constant ROUTER = 0xaBBc5F99639c9B6bCb58544ddf04EFA6802F4064;
 
     /*///////////////////////////////////////////////////////////////
                                 IMMUTABLES
     //////////////////////////////////////////////////////////////*/
-
-    /// @notice The underlying token the Vault accepts.
-
-    IPositionRouter internal immutable posRouter;
 
     /// @notice The base unit of the underlying token and hence rvToken.
     /// @dev Equal to 10 ** decimals. Used for fixed point arithmetic.
@@ -88,11 +64,6 @@ contract Vault is ERC4626, Auth {
         // Prevent minting of shares until
         // the initialize function is called.
         totalSupply = type(uint256).max;
-        /// @dev Instantiate the Position Router contract using its address
-        posRouter = IPositionRouter(POSITION_ROUTER);
-        // Setup logic
-        getCurrencyContract["USDC"] = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
-        getCurrencyContract["ETH"] = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -141,51 +112,23 @@ contract Vault is ERC4626, Auth {
 
     bool public positionOpen = false;
 
-    mapping(string => address) getCurrencyContract;
-
-    /// @notice Sets the initial price for the pool
-    /// @dev Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value
-    /// @param price the initial sqrt price of the pool as a Q64.96
-    function openPosition(
-        OrderType order,
-        Market calldata market,
-        uint256 price,
-        uint256 size
-    ) public {
-        // Add an emit event here
-        bool isLong = order == OrderType.Buy ? true : false;
-        address[] memory path = new address[](2);
-        path[0] = getCurrencyContract[market.baseAsset];
-        path[1] = getCurrencyContract[market.quoteAsset];
-
-        // TODO: Can't hardcode exec fees
-        // May be set it as part of vault parameters
-        // Or read from a GMX smart contract
-        uint256 executionFee = 300000000000000;
-
-        posRouter.createIncreasePosition{value: executionFee}(
-            path,
-            getCurrencyContract[market.quoteAsset],
-            10000000, // TODO: Dunno what this is
-            0,
-            size,
-            isLong,
-            price,
-            executionFee,
-            bytes32(0)
-        );
-    }
-
-    function setBracketOrders() public {}
-
-    /// @notice Open a Long position with stop loss and take profit
-    /// @param rvTokenAmount The amount of rvTokens to claim.
+    /// @notice Opena a SHORT position with stop loss and take profit triggers
+    /// @param order The amount of rvTokens to claim.
     /// @dev Accrued fees are measured as rvTokens held by the Vault.
-    function goLong(uint256 rvTokenAmount) external requiresAuth {
-        emit FeesClaimed(msg.sender, rvTokenAmount);
-
-        // Transfer the provided amount of rvTokens to the caller.
-        ERC20(this).safeTransfer(msg.sender, rvTokenAmount);
+    function goShort(
+        Order memory order,
+        uint256 stopLoss,
+        uint256 takeProfit
+    ) external {
+        // TODO: Checks for stoploss, takeprofit
+        // Open short position
+        openPosition(order); //createIncreasePositions
+        // Set stop loss trigger
+        order.acceptablePrice = ((100 + stopLoss) / 100) * order.acceptablePrice;
+        stopOrder(order, true);
+        // Set take profit trigger
+        order.acceptablePrice = ((100 - takeProfit) / 100) * order.acceptablePrice;
+        stopOrder(order, false);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -231,6 +174,9 @@ contract Vault is ERC4626, Auth {
         // Open for deposits.
         totalSupply = 0;
 
+        // Open for trading with router
+        asset.approve(ROUTER, 1e18); // TODO: Approve upto MAX spend limit
+
         emit Initialized(msg.sender);
     }
 
@@ -238,19 +184,6 @@ contract Vault is ERC4626, Auth {
     /// @dev Caller will receive any ETH held as float in the Vault.
     function destroy() external requiresAuth {
         selfdestruct(payable(msg.sender));
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                    APPROVAL LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Initializes the Vault, enabling it to receive deposits.
-    /// @dev All critical parameters must already be set before calling.
-    function approve() external requiresAuth {
-        IRouter router = IRouter(ROUTER);
-        router.approvePlugin(POSITION_ROUTER);
-        // Approve router to spend USDC
-        asset.approve(ROUTER, 1e18); // TODO: Approve upto MAX spend limit
     }
 
     /*///////////////////////////////////////////////////////////////
