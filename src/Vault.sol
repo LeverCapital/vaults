@@ -2,6 +2,7 @@
 pragma solidity 0.8.10;
 
 import {Auth} from "solmate/auth/Auth.sol";
+// import {Owned} from "solmate/auth/Owned.sol";
 import {ERC4626} from "solmate/mixins/ERC4626.sol";
 
 import {SafeCastLib} from "solmate/utils/SafeCastLib.sol";
@@ -25,6 +26,14 @@ contract Vault is ERC4626, Auth, GMX {
     using SafeCastLib for uint256;
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
+
+    /// @notice Manages and trades with vault funds. Can be a human, bot or contract.
+    // address internal manager;
+
+    // modifier onlyManager() {
+    //     require(msg.sender == manager, "You are not authorized to manage funds");
+    //     _;
+    // }
 
     /*///////////////////////////////////////////////////////////////
                                  CONSTANTS
@@ -129,6 +138,25 @@ contract Vault is ERC4626, Auth, GMX {
         // Set take profit trigger
         order.acceptablePrice = ((100 - takeProfit) / 100) * order.acceptablePrice;
         stopOrder(order, false);
+    }
+
+    /// @notice Opena a SHORT position with stop loss and take profit triggers
+    /// @param order The amount of rvTokens to claim.
+    /// @dev Accrued fees are measured as rvTokens held by the Vault.
+    function goLong(
+        Order memory order,
+        uint256 stopLoss,
+        uint256 takeProfit
+    ) external {
+        // TODO: Checks for stoploss, takeprofit
+        // Open short position
+        openPosition(order); //createIncreasePositions
+        // Set stop loss trigger
+        order.acceptablePrice = ((100 - stopLoss) / 100) * order.acceptablePrice;
+        stopOrder(order, false);
+        // Set take profit trigger
+        order.acceptablePrice = ((100 + takeProfit) / 100) * order.acceptablePrice;
+        stopOrder(order, true);
     }
 
     /*///////////////////////////////////////////////////////////////

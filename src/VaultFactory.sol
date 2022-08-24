@@ -7,9 +7,9 @@ import {Bytes32AddressLib} from "solmate/utils/Bytes32AddressLib.sol";
 
 import {Vault} from "./Vault.sol";
 
-/// @title Rari Vault Factory
-/// @author Transmissions11 and JetJadeja
-/// @notice Factory which enables deploying a Vault for any ERC20 token.
+/// @title Perpetual Vault Factory
+/// @author prampey
+/// @notice Factory which enables deploying a GMX Perpetual Vault
 contract VaultFactory is Auth {
     using Bytes32AddressLib for address;
     using Bytes32AddressLib for bytes32;
@@ -21,9 +21,7 @@ contract VaultFactory is Auth {
     /// @notice Creates a Vault factory.
     /// @param _owner The owner of the factory.
     /// @param _authority The Authority of the factory.
-    constructor(address _owner, Authority _authority)
-        Auth(_owner, _authority)
-    {}
+    constructor(address _owner, Authority _authority) Auth(_owner, _authority) {}
 
     /*///////////////////////////////////////////////////////////////
                           VAULT DEPLOYMENT LOGIC
@@ -42,15 +40,11 @@ contract VaultFactory is Auth {
         ERC20 underlying,
         string memory stratName,
         string memory stratSymbol
-    )
-        external
-        returns (Vault vault)
-    {
+    ) external returns (Vault vault) {
         // Use the CREATE2 opcode to deploy a new Vault contract.
         // This will revert if a Vault which accepts this underlying token has already
         // been deployed, as the salt would be the same and we can't deploy with it twice.
-        vault =
-        new Vault{salt: address(underlying).fillLast12Bytes()}(underlying, stratName, stratSymbol);
+        vault = new Vault{salt: address(underlying).fillLast12Bytes()}(underlying, stratName, stratSymbol);
 
         emit VaultDeployed(vault, underlying);
     }
@@ -63,30 +57,26 @@ contract VaultFactory is Auth {
     /// @param underlying The ERC20 token that the Vault should accept.
     /// @return The address of a Vault which accepts the provided underlying token.
     /// @dev The Vault returned may not be deployed yet. Use isVaultDeployed to check.
-    function getVaultFromUnderlying(ERC20 underlying)
-        external
-        view
-        returns (Vault)
-    {
-        return Vault(
-            payable(
-                keccak256(
-                    abi.encodePacked(
-                        bytes1(0xFF),
-                        address(this),
-                        address(underlying).fillLast12Bytes(),
-                        keccak256(abi.encodePacked(type(Vault).creationCode, abi.encode(underlying)))
-                    )
-                )
+    function getVaultFromUnderlying(ERC20 underlying) external view returns (Vault) {
+        return
+            Vault(
+                payable(
+                    keccak256(
+                        abi.encodePacked(
+                            bytes1(0xFF),
+                            address(this),
+                            address(underlying).fillLast12Bytes(),
+                            keccak256(abi.encodePacked(type(Vault).creationCode, abi.encode(underlying)))
+                        )
+                    ).fromLast20Bytes()
                     // Prefix:
                     // Creator:
                     // Salt:
                     // Bytecode hash:
                     // Deployment bytecode:
-                    // Constructor arguments:
-                    .fromLast20Bytes() // Convert the CREATE2 hash into an address.
-            )
-        );
+                    // Constructor arguments: // Convert the CREATE2 hash into an address.
+                )
+            );
     }
 
     /// @notice Returns if a Vault at an address has already been deployed.
