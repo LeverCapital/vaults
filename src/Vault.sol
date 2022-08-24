@@ -2,7 +2,6 @@
 pragma solidity 0.8.10;
 
 import {Owned} from "solmate/auth/Owned.sol";
-// import {Owned} from "solmate/auth/Owned.sol";
 import {ERC4626} from "solmate/mixins/ERC4626.sol";
 
 import {SafeCastLib} from "solmate/utils/SafeCastLib.sol";
@@ -11,7 +10,7 @@ import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {IExchange, Order} from "./interfaces/IExchange.sol";
-import {GMX} from "./exchanges/GMX.sol";
+import {GMXClient} from "./modules/GMXClient.sol";
 
 interface IRouter {
     function approvePlugin(address _plugin) external;
@@ -22,18 +21,10 @@ interface IRouter {
 /// @notice Vault contract which keeps track of PnL and ensures secure and non-custodial:
 /// - deposits and withdrawals
 /// - trade orders on any DEX
-contract Vault is ERC4626, Owned, GMX {
+contract Vault is ERC4626, Owned, GMXClient {
     using SafeCastLib for uint256;
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
-
-    /// @notice Manages and trades with vault funds. Can be a human, bot or contract.
-    // address internal manager;
-
-    // modifier onlyManager() {
-    //     require(msg.sender == manager, "You are not authorized to manage funds");
-    //     _;
-    // }
 
     /*///////////////////////////////////////////////////////////////
                                  CONSTANTS
@@ -57,7 +48,8 @@ contract Vault is ERC4626, Owned, GMX {
         ERC20 _asset,
         string memory _stratName,
         string memory _stratSymbol,
-        address _owner
+        address _owner,
+        address _manager
     )
         // Underlying token
         ERC4626(
@@ -68,6 +60,7 @@ contract Vault is ERC4626, Owned, GMX {
             string(abi.encodePacked(_stratSymbol, "Keep"))
         )
         Owned(_owner)
+        GMXClient(_manager)
     {
         BASE_UNIT = 10**decimals;
 

@@ -2,6 +2,7 @@
 pragma solidity 0.8.10;
 
 import {IExchange, Market, Order} from "../interfaces/IExchange.sol";
+import {Managed} from "./Managed.sol";
 
 interface IPositionRouter {
     function createIncreasePosition(
@@ -48,7 +49,7 @@ interface IRouter {
 
 /// @title Interface to the GMX exchange
 /// @notice Contains methods to manage positions by Lever vaults
-contract GMX {
+contract GMXClient is Managed {
     /*///////////////////////////////////////////////////////////////
                                  CONSTANTS
     //////////////////////////////////////////////////////////////*/
@@ -69,7 +70,7 @@ contract GMX {
     IOrderBook internal immutable orderBook;
 
     /// @notice Deploy this
-    constructor() {
+    constructor(address _manager) Managed(_manager) {
         /// @dev Instantiate the Position Router contract using its address
         posRouter = IPositionRouter(POSITION_ROUTER);
         orderBook = IOrderBook(ORDER_BOOK);
@@ -86,7 +87,7 @@ contract GMX {
     /// @notice Sets the initial price for the pool
     /// @dev Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value
     /// @param order the initial sqrt price of the pool as a Q64.96
-    function stopOrder(Order memory order, bool triggerAbovePrice) public {
+    function stopOrder(Order memory order, bool triggerAbovePrice) public onlyManager {
         // TODO: Add an emit event here
         address[] memory path = new address[](2);
         path[0] = getCurrencyContract[order.market.baseAsset];
@@ -111,7 +112,7 @@ contract GMX {
     /// @notice Sets the initial price for the pool
     /// @dev Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value
     /// @param order the initial sqrt price of the pool as a Q64.96
-    function openPosition(Order memory order) public {
+    function openPosition(Order memory order) public onlyManager {
         // TODO: Add an emit event here
         address[] memory path = new address[](2);
         path[0] = getCurrencyContract[order.market.baseAsset];
@@ -138,7 +139,7 @@ contract GMX {
     /// @notice Sets the initial price for the pool
     /// @dev Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value
     /// @param order the initial sqrt price of the pool as a Q64.96
-    function closePosition(Order memory order) public {
+    function closePosition(Order memory order) public onlyManager {
         // TODO: Add an emit event here
         address[] memory path = new address[](2);
         path[0] = getCurrencyContract[order.market.baseAsset];
@@ -166,7 +167,7 @@ contract GMX {
     /*///////////////////////////////////////////////////////////////
                     APPROVAL LOGIC
     //////////////////////////////////////////////////////////////*/
-    function approve() external {
+    function approve() external onlyManager {
         IRouter router = IRouter(ROUTER);
         router.approvePlugin(POSITION_ROUTER);
     }

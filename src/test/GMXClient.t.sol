@@ -6,17 +6,17 @@ import "forge-std/Script.sol";
 import "ds-test/test.sol";
 import {DSTestPlus} from "solmate/test/utils/DSTestPlus.sol";
 
-import "../exchanges/GMX.sol";
+import "../modules/GMXClient.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 
-contract GMXTest is DSTestPlus, Script {
-    GMX gmx;
+contract GMXClientTest is DSTestPlus, Script {
+    GMXClient gmx;
     ERC20 usdc;
 
     function setUp() public {
         vm.createSelectFork(vm.rpcUrl("arb_mainnet")); // Setup fork testing
 
-        gmx = new GMX();
+        gmx = new GMXClient(address(this));
         gmx.approve();
 
         // Add some eth to the contract
@@ -83,4 +83,15 @@ contract GMXTest is DSTestPlus, Script {
 
         gmx.closePosition(sellOrder);
     }
+
+    /*///////////////////////////////////////////////////////////////
+                        SECURITY SANITY CHECKS
+    //////////////////////////////////////////////////////////////*/
+
+    // TODO: Takes too long
+    // function testFailNonManagerApprove(address rando) public {
+    //     vm.assume(rando != address(this)); // Manager is the test runner here so not rando ;)
+    //     vm.prank(rando);
+    //     gmx.approve();
+    // }
 }

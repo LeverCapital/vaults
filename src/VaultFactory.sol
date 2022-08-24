@@ -36,12 +36,19 @@ contract VaultFactory {
     function deployVault(
         ERC20 underlying,
         string memory stratName,
-        string memory stratSymbol
+        string memory stratSymbol,
+        address manager
     ) external returns (Vault vault) {
         // Use the CREATE2 opcode to deploy a new Vault contract.
         // This will revert if a Vault which accepts this underlying token has already
         // been deployed, as the salt would be the same and we can't deploy with it twice.
-        vault = new Vault{salt: address(underlying).fillLast12Bytes()}(underlying, stratName, stratSymbol, msg.sender);
+        vault = new Vault{salt: address(underlying).fillLast12Bytes()}(
+            underlying,
+            stratName,
+            stratSymbol,
+            msg.sender,
+            manager
+        );
 
         emit VaultDeployed(vault, underlying);
     }
