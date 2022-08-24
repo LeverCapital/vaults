@@ -2,7 +2,6 @@
 pragma solidity 0.8.10;
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
-import {Auth, Authority} from "solmate/auth/Auth.sol";
 import {Bytes32AddressLib} from "solmate/utils/Bytes32AddressLib.sol";
 
 import {Vault} from "./Vault.sol";
@@ -10,7 +9,7 @@ import {Vault} from "./Vault.sol";
 /// @title Perpetual Vault Factory
 /// @author prampey
 /// @notice Factory which enables deploying a GMX Perpetual Vault
-contract VaultFactory is Auth {
+contract VaultFactory {
     using Bytes32AddressLib for address;
     using Bytes32AddressLib for bytes32;
 
@@ -19,9 +18,7 @@ contract VaultFactory is Auth {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Creates a Vault factory.
-    /// @param _owner The owner of the factory.
-    /// @param _authority The Authority of the factory.
-    constructor(address _owner, Authority _authority) Auth(_owner, _authority) {}
+    constructor() {}
 
     /*///////////////////////////////////////////////////////////////
                           VAULT DEPLOYMENT LOGIC
@@ -44,7 +41,7 @@ contract VaultFactory is Auth {
         // Use the CREATE2 opcode to deploy a new Vault contract.
         // This will revert if a Vault which accepts this underlying token has already
         // been deployed, as the salt would be the same and we can't deploy with it twice.
-        vault = new Vault{salt: address(underlying).fillLast12Bytes()}(underlying, stratName, stratSymbol);
+        vault = new Vault{salt: address(underlying).fillLast12Bytes()}(underlying, stratName, stratSymbol, msg.sender);
 
         emit VaultDeployed(vault, underlying);
     }

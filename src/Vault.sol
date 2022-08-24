@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.10;
 
-import {Auth} from "solmate/auth/Auth.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 // import {Owned} from "solmate/auth/Owned.sol";
 import {ERC4626} from "solmate/mixins/ERC4626.sol";
 
@@ -22,7 +22,7 @@ interface IRouter {
 /// @notice Vault contract which keeps track of PnL and ensures secure and non-custodial:
 /// - deposits and withdrawals
 /// - trade orders on any DEX
-contract Vault is ERC4626, Auth, GMX {
+contract Vault is ERC4626, Owned, GMX {
     using SafeCastLib for uint256;
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
@@ -56,7 +56,8 @@ contract Vault is ERC4626, Auth, GMX {
     constructor(
         ERC20 _asset,
         string memory _stratName,
-        string memory _stratSymbol
+        string memory _stratSymbol,
+        address _owner
     )
         // Underlying token
         ERC4626(
@@ -66,7 +67,7 @@ contract Vault is ERC4626, Auth, GMX {
             // ex: zKeep
             string(abi.encodePacked(_stratSymbol, "Keep"))
         )
-        Auth(Auth(msg.sender).owner(), Auth(msg.sender).authority())
+        Owned(_owner)
     {
         BASE_UNIT = 10**decimals;
 
@@ -90,7 +91,7 @@ contract Vault is ERC4626, Auth, GMX {
 
     /// @notice Sets a new fee percentage.
     /// @param newFeePercent The new fee percentage.
-    function setFeePercent(uint256 newFeePercent) external requiresAuth {
+    function setFeePercent(uint256 newFeePercent) external onlyOwner {
         // A fee percentage over 100% doesn't make sense.
         require(newFeePercent <= 100, "FEE_TOO_HIGH");
 
@@ -171,7 +172,7 @@ contract Vault is ERC4626, Auth, GMX {
     /// @notice Claims fees accrued from harvests.
     /// @param rvTokenAmount The amount of rvTokens to claim.
     /// @dev Accrued fees are measured as rvTokens held by the Vault.
-    function claimFees(uint256 rvTokenAmount) external requiresAuth {
+    function claimFees(uint256 rvTokenAmount) external onlyOwner {
         emit FeesClaimed(msg.sender, rvTokenAmount);
 
         // Transfer the provided amount of rvTokens to the caller.
@@ -192,7 +193,7 @@ contract Vault is ERC4626, Auth, GMX {
 
     /// @notice Initializes the Vault, enabling it to receive deposits.
     /// @dev All critical parameters must already be set before calling.
-    function initialize() external requiresAuth {
+    function initialize() external onlyOwner {
         // Ensure the Vault has not already been initialized.
         require(!isInitialized, "ALREADY_INITIALIZED");
 
@@ -210,7 +211,7 @@ contract Vault is ERC4626, Auth, GMX {
 
     /// @notice Self destructs a Vault, enabling it to be redeployed.
     /// @dev Caller will receive any ETH held as float in the Vault.
-    function destroy() external requiresAuth {
+    function destroy() external onlyOwner {
         selfdestruct(payable(msg.sender));
     }
 

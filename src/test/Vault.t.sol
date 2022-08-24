@@ -21,7 +21,7 @@ contract VaultTest is DSTestPlus, Script {
     function setUp() public {
         asset = new MockERC20("Mock Token", "TKN", 18);
 
-        vault = new VaultFactory(address(this), Authority(address(0))).deployVault(asset, "test_strat", "TST");
+        vault = new VaultFactory().deployVault(asset, "test_strat", "TST");
 
         vault.setFeePercent(5);
 
@@ -201,7 +201,7 @@ contract VaultPositionsTest is DSTestPlus, Script {
 
         usdc = ERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8); // USDC token address on Arbitrum
 
-        vault = new VaultFactory(address(this), Authority(address(0))).deployVault(usdc, "test_strat", "TST");
+        vault = new VaultFactory().deployVault(usdc, "test_strat", "TST");
 
         vault.setFeePercent(5);
 
