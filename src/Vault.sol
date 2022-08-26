@@ -17,7 +17,7 @@
 pragma solidity 0.8.10;
 
 import {Owned} from "solmate/auth/Owned.sol";
-import {ERC4626} from "solmate/mixins/ERC4626.sol";
+import {ERC4626} from "./modules/ERC4626.sol";
 
 import {SafeCastLib} from "solmate/utils/SafeCastLib.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
@@ -116,7 +116,13 @@ contract Vault is ERC4626, Owned, GMXClient {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function afterDeposit(uint256, uint256) internal override {}
+    function beforeDeposit(uint256, uint256) internal view override {
+        require(!positionOpen, "Trading currently in progress!");
+    }
+
+    function beforeWithdraw(uint256, uint256) internal view override {
+        require(!positionOpen, "Trading currently in progress!");
+    }
 
     /*///////////////////////////////////////////////////////////////
                         VAULT ACCOUNTING LOGIC

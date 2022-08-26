@@ -116,6 +116,8 @@ contract GMXClient is Managed {
         );
     }
 
+    bool public positionOpen;
+
     /// @notice Sets the initial price for the pool
     /// @dev Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value
     /// @param order the initial sqrt price of the pool as a Q64.96
@@ -140,6 +142,7 @@ contract GMXClient is Managed {
             executionFee,
             bytes32(0)
         );
+        positionOpen = true;
         emit PositionOpened(order);
     }
 
@@ -169,7 +172,8 @@ contract GMXClient is Managed {
             executionFee,
             false
         );
-        emit PositionOpened(order);
+        positionOpen = false;
+        emit PositionClosed(order);
     }
 
     function isAnyPositionOpen() public onlyManager returns (bool) {}
