@@ -25,7 +25,7 @@ contract GMXClientTest is DSTestPlus, Script {
         usdc = ERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8); // USDC token address on Arbitrum
         // Transfer some USDC into GMX
         vm.prank(address(usdc));
-        usdc.transfer(address(gmx), 10000000000);
+        usdc.transfer(address(gmx), 10000000000); // TODO: Should remove this!
 
         // Approve GMX to spend testrunner's USDC
         usdc.approve(address(gmx), type(uint256).max);
@@ -82,6 +82,35 @@ contract GMXClientTest is DSTestPlus, Script {
         });
 
         gmx.closePosition(sellOrder);
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                        BRACKET ORDER TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testGoShort() public {
+        Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
+        Order memory sellOrder = Order({
+            isBuy: false,
+            market: market,
+            acceptablePrice: 1168294400000000000000000000000000,
+            size: 10941764059534511257600000000000,
+            collateral: 100000
+        });
+        gmx.goShort(sellOrder, 1, 1);
+    }
+
+    function testGoLong(uint256 price) public {
+        Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
+        Order memory buyOrder = Order({
+            isBuy: true,
+            market: market,
+            acceptablePrice: price, //1168294400000000000000000000000000
+            size: 10941764059534511257600000000000,
+            collateral: 100000
+        });
+
+        gmx.goLong(buyOrder, 1, 1);
     }
 
     /*///////////////////////////////////////////////////////////////

@@ -128,50 +128,6 @@ contract Vault is ERC4626, Owned, GMXClient {
     }
 
     /*///////////////////////////////////////////////////////////////
-                             VAULT POSITIONS LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    bool public positionOpen = false;
-
-    /// @notice Opena a SHORT position with stop loss and take profit triggers
-    /// @param order The amount of rvTokens to claim.
-    /// @dev Accrued fees are measured as rvTokens held by the Vault.
-    function goShort(
-        Order memory order,
-        uint256 stopLoss,
-        uint256 takeProfit
-    ) external {
-        // TODO: Numerical checks for stoploss, takeprofit
-        // Open short position
-        openPosition(order); //createIncreasePositions
-        // Set stop loss trigger
-        order.acceptablePrice = ((100 + stopLoss) / 100) * order.acceptablePrice;
-        stopOrder(order, true);
-        // Set take profit trigger
-        order.acceptablePrice = ((100 - takeProfit) / 100) * order.acceptablePrice;
-        stopOrder(order, false);
-    }
-
-    /// @notice Opena a SHORT position with stop loss and take profit triggers
-    /// @param order The amount of rvTokens to claim.
-    /// @dev Accrued fees are measured as rvTokens held by the Vault.
-    function goLong(
-        Order memory order,
-        uint256 stopLoss,
-        uint256 takeProfit
-    ) external {
-        // TODO: Checks for stoploss, takeprofit
-        // Open short position
-        openPosition(order); //createIncreasePositions
-        // Set stop loss trigger
-        order.acceptablePrice = ((100 - stopLoss) / 100) * order.acceptablePrice;
-        stopOrder(order, false);
-        // Set take profit trigger
-        order.acceptablePrice = ((100 + takeProfit) / 100) * order.acceptablePrice;
-        stopOrder(order, true);
-    }
-
-    /*///////////////////////////////////////////////////////////////
                              FEE CLAIM LOGIC
     //////////////////////////////////////////////////////////////*/
 
