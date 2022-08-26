@@ -47,9 +47,16 @@ interface IRouter {
     function approvePlugin(address _plugin) external;
 }
 
-/// @title Interface to the GMX exchange
+/// @title Client to interact with the GMX exchange
 /// @notice Contains methods to manage positions by Lever vaults
 contract GMXClient is Managed {
+    /*//////////////////////////////////////////////////////////////
+                                 EVENTS
+    //////////////////////////////////////////////////////////////*/
+
+    event PositionOpened(Order indexed order);
+    event PositionClosed(Order indexed order);
+
     /*///////////////////////////////////////////////////////////////
                                  CONSTANTS
     //////////////////////////////////////////////////////////////*/
@@ -134,6 +141,7 @@ contract GMXClient is Managed {
             executionFee,
             bytes32(0)
         );
+        emit PositionOpened(order);
     }
 
     /// @notice Sets the initial price for the pool
@@ -162,7 +170,10 @@ contract GMXClient is Managed {
             executionFee,
             false
         );
+        emit PositionOpened(order);
     }
+
+    function isAnyPositionOpen() public onlyManager returns (bool) {}
 
     /*///////////////////////////////////////////////////////////////
                     APPROVAL LOGIC

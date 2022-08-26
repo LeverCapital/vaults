@@ -88,7 +88,7 @@ contract GMXClientTest is DSTestPlus, Script {
                         SECURITY SANITY CHECKS
     //////////////////////////////////////////////////////////////*/
 
-    // TODO: Takes too long
+    // TODO: Takes too long. But why?
     // function testFailNonManagerApprove(address rando) public {
     //     vm.assume(rando != address(this)); // Manager is the test runner here so not rando ;)
     //     vm.prank(rando);

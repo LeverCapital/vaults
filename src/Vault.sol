@@ -1,4 +1,19 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+//        ___       ___           ___           ___           ___
+//       /\__\     /\  \         /\__\         /\  \         /\  \
+//      /:/  /    /::\  \       /:/  /        /::\  \       /::\  \
+//     /:/  /    /:/\:\  \     /:/  /        /:/\:\  \     /:/\:\  \
+//    /:/  /    /::\~\:\  \   /:/__/  ___   /::\~\:\  \   /::\~\:\  \
+//   /:/__/    /:/\:\ \:\__\  |:|  | /\__\ /:/\:\ \:\__\ /:/\:\ \:\__\
+//   \:\  \    \:\~\:\ \/__/  |:|  |/:/  / \:\~\:\ \/__/ \/_|::\/:/  /
+//    \:\  \    \:\ \:\__\    |:|__/:/  /   \:\ \:\__\      |:|::/  /
+//     \:\  \    \:\ \/__/     \::::/__/     \:\ \/__/      |:|\/__/
+//      \:\__\    \:\__\        ~~~~          \:\__\        |:|  |
+//       \/__/     \/__/                       \/__/         \|__|
+//
+//   Lever Capital - https://sigma-ui.on.fleek.co/#/perp-vaults
+//
+//   SPDX-License-Identifier: AGPL-3.0-only
+
 pragma solidity 0.8.10;
 
 import {Owned} from "solmate/auth/Owned.sol";
@@ -19,8 +34,11 @@ interface IRouter {
 /// @title Perpetual Vault
 /// @author prampey
 /// @notice Vault contract which keeps track of PnL and ensures secure and non-custodial:
-/// - deposits and withdrawals
-/// - trade orders on any DEX
+/// - trade orders on GMX
+/// - Lock funds during trading window
+/// - Performance fees, manager fees
+/// - Two access roles: Owner and Manager
+/// - Claim trading rewards
 contract Vault is ERC4626, Owned, GMXClient {
     using SafeCastLib for uint256;
     using SafeTransferLib for ERC20;
@@ -123,7 +141,7 @@ contract Vault is ERC4626, Owned, GMXClient {
         uint256 stopLoss,
         uint256 takeProfit
     ) external {
-        // TODO: Checks for stoploss, takeprofit
+        // TODO: Numerical checks for stoploss, takeprofit
         // Open short position
         openPosition(order); //createIncreasePositions
         // Set stop loss trigger
@@ -197,7 +215,7 @@ contract Vault is ERC4626, Owned, GMXClient {
         totalSupply = 0;
 
         // Open for trading with router
-        asset.approve(ROUTER, 1e18); // TODO: Approve upto MAX spend limit
+        asset.approve(ROUTER, 1e18); // TODO: Approve upto MAX spend limit?
 
         emit Initialized(msg.sender);
     }
@@ -206,6 +224,16 @@ contract Vault is ERC4626, Owned, GMXClient {
     /// @dev Caller will receive any ETH held as float in the Vault.
     function destroy() external onlyOwner {
         selfdestruct(payable(msg.sender));
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                          MANAGER LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Allows vault owner to set the fund manager
+    function setManager(address newManager) public override onlyOwner {
+        manager = newManager;
+        emit ManagerUpdated(msg.sender, newManager);
     }
 
     /*///////////////////////////////////////////////////////////////

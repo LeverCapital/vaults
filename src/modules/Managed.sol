@@ -19,7 +19,6 @@ abstract contract Managed {
 
     modifier onlyManager() virtual {
         require(msg.sender == manager, "You are not authorized to manage funds!");
-
         _;
     }
 

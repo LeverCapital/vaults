@@ -219,6 +219,26 @@ contract VaultPositionsTest is DSTestPlus, Script {
     }
 
     /*///////////////////////////////////////////////////////////////
+                 MANAGER PERMISSION TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    // function testNewManagerCanManage(address newManager) public {
+    //     vm.assume(newManager != address(0));
+    //     vault.setManager(newManager);
+    //     vm.prank(newManager);
+    //     Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
+    //     Order memory sellOrder = Order({
+    //         isBuy: false,
+    //         market: market,
+    //         acceptablePrice: 1168294400000000000000000000000000, //1168294400000000000000000000000000
+    //         size: 10941764059534511257600000000000,
+    //         collateral: 100000
+    //     });
+
+    //     vault.goShort(sellOrder, 1, 1); // Function inherited from GMXClient
+    // }
+
+    /*///////////////////////////////////////////////////////////////
                         POSITIONS TESTS
     //////////////////////////////////////////////////////////////*/
 
