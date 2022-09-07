@@ -39,7 +39,7 @@ contract GMXClientTest is DSTestPlus, Script {
                         ORDER TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function testLongOpenPosition(uint256 price) public {
+    function testLongOpenPosition(uint256 price, uint256 size) public {
         // Questions
         // What happens at a very low/high price?
         // What is the units used for price?
@@ -51,33 +51,33 @@ contract GMXClientTest is DSTestPlus, Script {
             isBuy: true,
             market: market,
             acceptablePrice: price, //1168294400000000000000000000000000
-            size: 10941764059534511257600000000000,
+            size: size, //10941764059534511257600000000000,
             collateral: 100000
         });
 
         gmx.openPosition(buyOrder);
     }
 
-    function testShortOpenPosition(uint256 price) public {
+    function testShortOpenPosition(uint256 price, uint256 size) public {
         Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
         Order memory sellOrder = Order({
             isBuy: false,
             market: market,
             acceptablePrice: price,
-            size: 10941764059534511257600000000000,
+            size: size,
             collateral: 100000
         });
 
         gmx.openPosition(sellOrder);
     }
 
-    function testShortClosePosition(uint256 price) public {
+    function testShortClosePosition(uint256 price, uint256 size) public {
         Market memory market = Market({quoteAsset: "ETH", baseAsset: "USDC"});
         Order memory sellOrder = Order({
             isBuy: false,
             market: market,
             acceptablePrice: price,
-            size: 10941764059534511257600000000000,
+            size: size,
             collateral: 100000
         });
 

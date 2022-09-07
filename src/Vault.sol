@@ -69,14 +69,7 @@ contract Vault is ERC4626, Owned, GMXClient {
         address _owner,
         address _manager
     )
-        // Underlying token
-        ERC4626(
-            _asset,
-            // ex: Zeno's Keep
-            string(abi.encodePacked(_stratName, "'s Keep")),
-            // ex: zKeep
-            string(abi.encodePacked(_stratSymbol, "Keep"))
-        )
+        ERC4626(_asset, string(abi.encodePacked(_stratName)), string(abi.encodePacked(_stratSymbol)))
         Owned(_owner)
         GMXClient(_manager)
     {
@@ -177,7 +170,7 @@ contract Vault is ERC4626, Owned, GMXClient {
         totalSupply = 0;
 
         // Open for trading with router
-        asset.approve(ROUTER, 1e18); // TODO: Approve upto MAX spend limit?
+        asset.approve(ROUTER, type(uint256).max); // TODO: Approve upto MAX spend limit?
 
         emit Initialized(msg.sender);
     }

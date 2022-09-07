@@ -1,4 +1,19 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+//        ___       ___           ___           ___           ___
+//       /\__\     /\  \         /\__\         /\  \         /\  \
+//      /:/  /    /::\  \       /:/  /        /::\  \       /::\  \
+//     /:/  /    /:/\:\  \     /:/  /        /:/\:\  \     /:/\:\  \
+//    /:/  /    /::\~\:\  \   /:/__/  ___   /::\~\:\  \   /::\~\:\  \
+//   /:/__/    /:/\:\ \:\__\  |:|  | /\__\ /:/\:\ \:\__\ /:/\:\ \:\__\
+//   \:\  \    \:\~\:\ \/__/  |:|  |/:/  / \:\~\:\ \/__/ \/_|::\/:/  /
+//    \:\  \    \:\ \:\__\    |:|__/:/  /   \:\ \:\__\      |:|::/  /
+//     \:\  \    \:\ \/__/     \::::/__/     \:\ \/__/      |:|\/__/
+//      \:\__\    \:\__\        ~~~~          \:\__\        |:|  |
+//       \/__/     \/__/                       \/__/         \|__|
+//
+//   Lever Capital - https://sigma-ui.on.fleek.co/#/perp-vaults
+//
+//   SPDX-License-Identifier: AGPL-3.0-only
+
 pragma solidity 0.8.10;
 
 import {IExchange, Market, Order} from "../interfaces/IExchange.sol";
@@ -118,7 +133,7 @@ contract GMXClient is Managed {
 
     bool public positionOpen;
 
-    /// @notice Sets the initial price for the pool
+    /// @notice Opens a position on the GMX orderbook
     /// @dev Price is represented as a sqrt(amountToken1/amountToken0) Q64.96 value
     /// @param order the initial sqrt price of the pool as a Q64.96
     function openPosition(Order memory order) public onlyManager {
@@ -131,7 +146,7 @@ contract GMXClient is Managed {
         // Or read from a GMX smart contract
         uint256 executionFee = 300000000000000;
 
-        posRouter.createIncreasePosition{value: executionFee}(
+        posRouter.createIncreasePosition{value: executionFee}( //TODO: who pays the execution fees?
             path,
             getCurrencyContract[order.market.quoteAsset],
             order.collateral,
