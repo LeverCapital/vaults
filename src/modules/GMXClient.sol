@@ -101,6 +101,16 @@ contract GMXClient is Managed {
     }
 
     /*///////////////////////////////////////////////////////////////
+                                 EXECUTION FEE LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    uint256 executionFee = 100000000000000;
+
+    function setExecFee(uint256 newFee) external onlyManager {
+        executionFee = newFee;
+    }
+
+    /*///////////////////////////////////////////////////////////////
                                  ORDER LOGIC
     //////////////////////////////////////////////////////////////*/
 
@@ -115,12 +125,7 @@ contract GMXClient is Managed {
         path[0] = getCurrencyContract[order.market.baseAsset];
         // path[1] = getCurrencyContract[order.market.quoteAsset];
 
-        // TODO: Can't hardcode exec fees
-        // May be set it as part of vault parameters
-        // Or read from a GMX smart contract
-        uint256 executionFee = 300000000000000;
-
-        orderBook.createDecreaseOrder{value: executionFee}(
+        orderBook.createDecreaseOrder{value: executionFee*3}(
             getCurrencyContract[order.market.quoteAsset],
             order.size,
             getCurrencyContract[order.market.quoteAsset],
@@ -141,16 +146,11 @@ contract GMXClient is Managed {
         path[0] = getCurrencyContract[order.market.baseAsset];
         path[1] = getCurrencyContract[order.market.quoteAsset];
 
-        // TODO: Can't hardcode exec fees
-        // May be set it as part of vault parameters
-        // Or read from a GMX smart contract
-        uint256 executionFee = 300000000000000;
-
         posRouter.createIncreasePosition{value: executionFee}( //TODO: who pays the execution fees?
             path,
             getCurrencyContract[order.market.quoteAsset],
             order.collateral,
-            0, // TODO: Investigate this
+            0, // TODO: Investigate this (_minOut)
             order.size,
             order.isBuy,
             order.acceptablePrice,
@@ -167,13 +167,8 @@ contract GMXClient is Managed {
     function closePosition(Order memory order) public onlyManager {
         // TODO: Add an emit event here
         address[] memory path = new address[](2);
-        path[0] = getCurrencyContract[order.market.baseAsset];
-        // path[1] = getCurrencyContract[order.market.quoteAsset];
-
-        // TODO: Can't hardcode exec fees
-        // May be set it as part of vault parameters
-        // Or read from a GMX smart contract
-        uint256 executionFee = 300000000000000;
+        path[0] = getCurrencyContract[order.market.quoteAsset];
+        path[1] = getCurrencyContract[order.market.baseAsset];
 
         posRouter.createDecreasePosition{value: executionFee}(
             path,
